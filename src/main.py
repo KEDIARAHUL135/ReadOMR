@@ -7,6 +7,6 @@
 ################################################################################
 
 import cv2
-import numpu as np
+import numpy as np
 
 print("Code initialised")
