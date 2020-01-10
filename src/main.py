@@ -8,11 +8,12 @@
 
 import cv2
 import numpy as np
+import src.macros as M
 
 
 # Read Input and resize it
-InputImage = cv2.imread("InputImages/Blank.jpeg")
-NewSize = (800, 800)
+InputImage = cv2.imread(M.InputImagePath)
+NewSize = (M.Size, M.Size)
 InputImage = cv2.resize(InputImage, NewSize)
 
 
@@ -32,8 +33,8 @@ def HoughCircleDetection():
     GrayImage = cv2.cvtColor(InputImage, cv2.COLOR_BGR2GRAY)
     BlurImage = cv2.medianBlur(GrayImage, 7)
 
-    Circles = cv2.HoughCircles(BlurImage, cv2.HOUGH_GRADIENT, 1.3, 20,
-                               param1=50, param2=30, minRadius=9, maxRadius=20)
+    Circles = cv2.HoughCircles(BlurImage, cv2.HOUGH_GRADIENT, M.dp, 20,
+                               param1=50, param2=30, minRadius=M.MinRadius, maxRadius=M.MaxRadius)
     Circles = np.uint16(np.around(Circles))
 
     return Circles
@@ -63,16 +64,16 @@ def FindCornerCircles(Circles):
 
     for i in Circles[0]:
         if NumOfCCFound < 4:
-            if ((i[0] <= 90) & (i[1] <= 90)).all():
+            if ((i[0] <= M.ThreshLengthCC) & (i[1] <= M.ThreshLengthCC)).all():
                 CornerCircles[NumOfCCFound] = i
                 NumOfCCFound += 1
-            elif ((i[0] <= 90) & (i[1] >= 710)).all():
+            elif ((i[0] <= M.ThreshLengthCC) & (i[1] >= (M.Size - M.ThreshLengthCC))).all():
                 CornerCircles[NumOfCCFound] = i
                 NumOfCCFound += 1
-            elif ((i[0] >= 710) & (i[1] <= 90)).all():
+            elif ((i[0] >= (M.Size - M.ThreshLengthCC)) & (i[1] <= M.ThreshLengthCC)).all():
                 CornerCircles[NumOfCCFound] = i
                 NumOfCCFound += 1
-            elif ((i[0] >= 710) & (i[1] >= 710)).all():
+            elif ((i[0] >= (M.Size - M.ThreshLengthCC)) & (i[1] >= (M.Size - M.ThreshLengthCC))).all():
                 CornerCircles[NumOfCCFound] = i
                 NumOfCCFound += 1
         else:
@@ -126,9 +127,9 @@ def ProjectiveTransform(CornerCircles):
 
     for i in CornerCircles[0]:
         # Top two
-        if i[1] <= 90:
+        if i[1] <= M.ThreshLengthCC:
             ## Top Left
-            if i[0] <= 90:
+            if i[0] <= M.ThreshLengthCC:
                 InitialPoints[0][0] = i[0]
                 InitialPoints[0][1] = i[1]
             ## Top Right
@@ -139,7 +140,7 @@ def ProjectiveTransform(CornerCircles):
         # Bottom two
         else:
             ## Bottom Left
-            if i[0] <= 90:
+            if i[0] <= M.ThreshLengthCC:
                 InitialPoints[3][0] = i[0]
                 InitialPoints[3][1] = i[1]
             ## Bottom Right
@@ -148,11 +149,12 @@ def ProjectiveTransform(CornerCircles):
                 InitialPoints[2][1] = i[1]
 
     # Final coordinates of 4 corner circles in another image
-    FinalPoints = np.float32([[0., 0.], [799., 0.], [799., 799.], [0., 799.]])
+    FinalPoints = np.float32([[0., 0.], [(M.Size - 1), 0.],\
+                              [(M.Size - 1), (M.Size - 1)], [0., (M.Size - 1)]])
 
     # Applying projective transform
     ProjectiveMatrix = cv2.getPerspectiveTransform(InitialPoints, FinalPoints)
-    OutputImage = cv2.warpPerspective(InputImage, ProjectiveMatrix, (800, 800))
+    OutputImage = cv2.warpPerspective(InputImage, ProjectiveMatrix, NewSize)
 
     return OutputImage
 
@@ -183,11 +185,12 @@ def CropReqOMR():
     CornerCircles = FindCornerCircles(Circles)
 
     ## Print corner circles
-    PrintCornerCircles(CornerCircles)
+    # PrintCornerCircles(CornerCircles)      # Uncomment to print corner circles
 
     # Applying Projective transformation.
     CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
 
+    cv2.imshow("PerfectOMR", CroppedOMRSheetImage)
 
 # Crop the required OMR sheet for answer detection
 CropReqOMR()
