@@ -17,6 +17,26 @@ NewSize = (M.Size, M.Size)
 InputImage = cv2.resize(InputImage, NewSize)
 
 
+class Answers:
+    def __init__(self, StN, MN, Class, Branch, BN, ScN, Section, FN, A_1t5, A_6t10,\
+                 A_11t15, A_16t20, A_21t25, A_26t30, OMRImage):
+        self.Img = OMRImage
+        self.StN = self.Img[StN.C_Y:StN.C_Y + StN.Length, StN.C_X:StN.C_X + StN.Width]
+        self.MN = self.Img[MN.C_Y:MN.C_Y + MN.Length, MN.C_X:MN.C_X + MN.Width]
+        self.Class = self.Img[Class.C_Y:Class.C_Y + Class.Length, Class.C_X:Class.C_X + Class.Width]
+        self.Branch = self.Img[Branch.C_Y:Branch.C_Y + Branch.Length, Branch.C_X:Branch.C_X + Branch.Width]
+        self.BN = self.Img[BN.C_Y:BN.C_Y + BN.Length, BN.C_X:BN.C_X + BN.Width]
+        self.ScN = self.Img[ScN.C_Y:ScN.C_Y + ScN.Length, ScN.C_X:ScN.C_X + ScN.Width]
+        self.Section = self.Img[Section.C_Y:Section.C_Y + Section.Length, Section.C_X:Section.C_X + Section.Width]
+        self.FN = self.Img[FN.C_Y:FN.C_Y + FN.Length, FN.C_X:FN.C_X + FN.Width]
+        self.A_1t5 = self.Img[A_1t5.C_Y:A_1t5.C_Y + A_1t5.Length, A_1t5.C_X:A_1t5.C_X + A_1t5.Width]
+        self.A_6t10 = self.Img[A_6t10.C_Y:A_6t10.C_Y + A_6t10.Length, A_6t10.C_X:A_6t10.C_X + A_6t10.Width]
+        self.A_11t15 = self.Img[A_11t15.C_Y:A_11t15.C_Y + A_11t15.Length, A_11t15.C_X:A_11t15.C_X + A_11t15.Width]
+        self.A_16t20 = self.Img[A_16t20.C_Y:A_16t20.C_Y + A_16t20.Length, A_16t20.C_X:A_16t20.C_X + A_16t20.Width]
+        self.A_21t25 = self.Img[A_21t25.C_Y:A_21t25.C_Y + A_21t25.Length, A_21t25.C_X:A_21t25.C_X + A_21t25.Width]
+        self.A_26t30 = self.Img[A_26t30.C_Y:A_26t30.C_Y + A_26t30.Length, A_26t30.C_X:A_26t30.C_X + A_26t30.Width]
+
+
 ################################################################################
 # Function      : HoughCircleDetection
 # Parameter     : GrayImage - It contains gray scale image of Input Image
@@ -86,20 +106,42 @@ def FindCornerCircles(Circles):
 
 
 ################################################################################
-# Function      : PrintCornerCircles
+# Function      : PrintImages
 # Parameter     : CornerCircles - It stores information of the corner
 #                                 circles detected.
-# Description   : This function prints the corner circles on the image.
-# Return        : FinalCornerCircles
+#                 PrintCC - It is a flag for printing Corner Circles
+#                 AnsImages - It is a object of class Answers passed
+#                             to this function
+# Description   : This function prints the images as required.
+# Return        : -
 ################################################################################
-def PrintCornerCircles(CornerCircles):
-    for i in CornerCircles[0, :]:
-        # draw the outer circle
-        cv2.circle(InputImage, (i[0], i[1]), i[2], (0, 255, 0), 2)
-        # draw the center of the circle
-        cv2.circle(InputImage, (i[0], i[1]), 2, (0, 0, 255), 3)
+def PrintImages(CornerCircles = None, PrintCC = None, AnsImages = None):
+    # Printing corner circles
+    if PrintCC != None:
+        for i in CornerCircles[0, :]:
+            # draw the outer circle
+            cv2.circle(InputImage, (i[0], i[1]), i[2], (0, 255, 0), 2)
+            # draw the center of the circle
+            cv2.circle(InputImage, (i[0], i[1]), 2, (0, 0, 255), 3)
 
-    cv2.imshow('Detected Corner Circles', InputImage)
+        cv2.imshow('Detected Corner Circles', InputImage)
+
+    # Printing Answer Images
+    if AnsImages != None:
+        cv2.imshow("1", AnsImages.StN)
+        cv2.imshow("2", AnsImages.MN)
+        cv2.imshow("3", AnsImages.Class)
+        cv2.imshow("4", AnsImages.Branch)
+        cv2.imshow("5", AnsImages.BN)
+        cv2.imshow("6", AnsImages.ScN)
+        cv2.imshow("7", AnsImages.Section)
+        cv2.imshow("8", AnsImages.FN)
+        cv2.imshow("9", AnsImages.A_1t5)
+        cv2.imshow("10", AnsImages.A_6t10)
+        cv2.imshow("11", AnsImages.A_11t15)
+        cv2.imshow("12", AnsImages.A_16t20)
+        cv2.imshow("13", AnsImages.A_21t25)
+        cv2.imshow("14", AnsImages.A_26t30)
 
 
 ################################################################################
@@ -159,29 +201,13 @@ def ProjectiveTransform(CornerCircles):
     return OutputImage
 
 
-class Answers:
-    def __init__(self, StN, MN, Class, Branch, BN, ScN, Section, FN, A_1t5, A_6t10,\
-                 A_11t15, A_16t20, A_21t25, A_26t30, OMRImage):
-        self.Img = OMRImage
-        self.StN = self.Img[StN.C_Y:StN.C_Y + StN.Length, StN.C_X:StN.C_X + StN.Width]
-        self.MN = self.Img[MN.C_Y:MN.C_Y + MN.Length, MN.C_X:MN.C_X + MN.Width]
-        self.Class = self.Img[Class.C_Y:Class.C_Y + Class.Length, Class.C_X:Class.C_X + Class.Width]
-        self.Branch = self.Img[Branch.C_Y:Branch.C_Y + Branch.Length, Branch.C_X:Branch.C_X + Branch.Width]
-        self.BN = self.Img[BN.C_Y:BN.C_Y + BN.Length, BN.C_X:BN.C_X + BN.Width]
-        self.ScN = self.Img[ScN.C_Y:ScN.C_Y + ScN.Length, ScN.C_X:ScN.C_X + ScN.Width]
-        self.Section = self.Img[Section.C_Y:Section.C_Y + Section.Length, Section.C_X:Section.C_X + Section.Width]
-        self.FN = self.Img[FN.C_Y:FN.C_Y + FN.Length, FN.C_X:FN.C_X + FN.Width]
-        self.A_1t5 = self.Img[A_1t5.C_Y:A_1t5.C_Y + A_1t5.Length, A_1t5.C_X:A_1t5.C_X + A_1t5.Width]
-        self.A_6t10 = self.Img[A_6t10.C_Y:A_6t10.C_Y + A_6t10.Length, A_6t10.C_X:A_6t10.C_X + A_6t10.Width]
-        self.A_11t15 = self.Img[A_11t15.C_Y:A_11t15.C_Y + A_11t15.Length, A_11t15.C_X:A_11t15.C_X + A_11t15.Width]
-        self.A_16t20 = self.Img[A_16t20.C_Y:A_16t20.C_Y + A_16t20.Length, A_16t20.C_X:A_16t20.C_X + A_16t20.Width]
-        self.A_21t25 = self.Img[A_21t25.C_Y:A_21t25.C_Y + A_21t25.Length, A_21t25.C_X:A_21t25.C_X + A_21t25.Width]
-        self.A_26t30 = self.Img[A_26t30.C_Y:A_26t30.C_Y + A_26t30.Length, A_26t30.C_X:A_26t30.C_X + A_26t30.Width]
-
-
 def ExtractAnswers(OMRImage):
     AnsImages = Answers(M.StN, M.MN, M.Class, M.Branch, M.BN, M.ScN, M.Section, M.FN, M.A_1t5,\
                   M.A_6t10, M.A_11t15, M.A_16t20, M.A_21t25, M.A_26t30, OMRImage)
+
+    PrintImages(AnsImages= AnsImages)
+
+
 
 
 ################################################################################
@@ -210,7 +236,7 @@ def CropReqOMR():
     CornerCircles = FindCornerCircles(Circles)
 
     ## Print corner circles
-    # PrintCornerCircles(CornerCircles)      # Uncomment to print corner circles
+    # PrintImages(CornerCircles, True)      # Uncomment to print corner circles
 
     # Applying Projective transformation.
     CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
