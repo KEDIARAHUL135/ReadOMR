@@ -159,6 +159,14 @@ def ProjectiveTransform(CornerCircles):
     return OutputImage
 
 
+def ExtractAnswers(OMRImage):
+    # All the coordinates of answers are stored in macros.py file.
+    roi = OMRImage[51:511, 30:527]
+    cv2.imshow("roi", roi)
+    Image = cv2.rectangle(OMRImage, (30, 51), (526, 510), (0, 200, 0), 3)
+    cv2.imshow("Image", Image)
+
+
 ################################################################################
 # Function      : CropReqOMR
 # Parameter     : Circles - It contains information of all the circles
@@ -191,6 +199,10 @@ def CropReqOMR():
     CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
 
     cv2.imshow("PerfectOMR", CroppedOMRSheetImage)
+
+    # Extract different answers
+    ExtractAnswers(CroppedOMRSheetImage)
+
 
 # Crop the required OMR sheet for answer detection
 CropReqOMR()
