@@ -102,13 +102,73 @@ def PrintCornerCircles(CornerCircles):
 
 
 ################################################################################
+# Function      : ProjectiveTransform
+# Parameter     : CornerCircles - It stores information of the corner
+#                                 circles detected.
+#                 OutputImage - It is the image of cropped OMR Sheet. It is
+#                               cropped in rectangle with the help of four
+#                               printed corner circles of the OMR Sheet.
+#                 InitialPoints - It contains the initial coordinates of
+#                                 four corner circles in clockwise order
+#                                 starting from top left.
+#                 FinalPoints - It contains the final coordinates of
+#                               four corner circles in clockwise order
+#                               starting from top left.
+# Description   : This function calls suitable functions one by one for
+#                 detecting circles, and the rearranging/resizing the OMR
+#                 sheet so that then the answers can be found from OMR Sheet.
+# Return        : -
+################################################################################
+def ProjectiveTransform(CornerCircles):
+
+    # Finding initial coordinates of 4 corner circles
+    InitialPoints = np.zeros((4, 2), np.float32)
+
+    for i in CornerCircles[0]:
+        # Top two
+        if i[1] <= 90:
+            ## Top Left
+            if i[0] <= 90:
+                InitialPoints[0][0] = i[0]
+                InitialPoints[0][1] = i[1]
+            ## Top Right
+            else:
+                InitialPoints[1][0] = i[0]
+                InitialPoints[1][1] = i[1]
+
+        # Bottom two
+        else:
+            ## Bottom Left
+            if i[0] <= 90:
+                InitialPoints[3][0] = i[0]
+                InitialPoints[3][1] = i[1]
+            ## Bottom Right
+            else:
+                InitialPoints[2][0] = i[0]
+                InitialPoints[2][1] = i[1]
+
+    # Final coordinates of 4 corner circles in another image
+    FinalPoints = np.float32([[0., 0.], [799., 0.], [799., 799.], [0., 799.]])
+
+    # Applying projective transform
+    ProjectiveMatrix = cv2.getPerspectiveTransform(InitialPoints, FinalPoints)
+    OutputImage = cv2.warpPerspective(InputImage, ProjectiveMatrix, (800, 800))
+
+    return OutputImage
+
+
+################################################################################
 # Function      : CropReqOMR
 # Parameter     : Circles - It contains information of all the circles
 #                           detected by HoughCircles function.
 #                           Information is - [x-coordinate of centre,
-#                              y-coordinate of centre, radius of circle]
+#                              y-coordinate of centre, radius of circle].
 #                 CornerCircles - It stores information of the corner
 #                                 circles detected.
+#                 CroppedOMRSheetImage - It is the image of cropped OMR Sheet.
+#                                        It is cropped in rectangle with the
+#                                        help of four printed corner circles
+#                                        of the OMR Sheet.
 # Description   : This function calls suitable functions one by one for
 #                 detecting circles, and the rearranging/resizing the OMR
 #                 sheet so that then the answers can be found from OMR Sheet.
@@ -124,6 +184,9 @@ def CropReqOMR():
 
     ## Print corner circles
     PrintCornerCircles(CornerCircles)
+
+    # Applying Projective transformation.
+    CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
 
 
 # Crop the required OMR sheet for answer detection
