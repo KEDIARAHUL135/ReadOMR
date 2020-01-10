@@ -159,12 +159,29 @@ def ProjectiveTransform(CornerCircles):
     return OutputImage
 
 
+class Answers:
+    def __init__(self, StN, MN, Class, Branch, BN, ScN, Section, FN, A_1t5, A_6t10,\
+                 A_11t15, A_16t20, A_21t25, A_26t30, OMRImage):
+        self.Img = OMRImage
+        self.StN = self.Img[StN.C_Y:StN.C_Y + StN.Length, StN.C_X:StN.C_X + StN.Width]
+        self.MN = self.Img[MN.C_Y:MN.C_Y + MN.Length, MN.C_X:MN.C_X + MN.Width]
+        self.Class = self.Img[Class.C_Y:Class.C_Y + Class.Length, Class.C_X:Class.C_X + Class.Width]
+        self.Branch = self.Img[Branch.C_Y:Branch.C_Y + Branch.Length, Branch.C_X:Branch.C_X + Branch.Width]
+        self.BN = self.Img[BN.C_Y:BN.C_Y + BN.Length, BN.C_X:BN.C_X + BN.Width]
+        self.ScN = self.Img[ScN.C_Y:ScN.C_Y + ScN.Length, ScN.C_X:ScN.C_X + ScN.Width]
+        self.Section = self.Img[Section.C_Y:Section.C_Y + Section.Length, Section.C_X:Section.C_X + Section.Width]
+        self.FN = self.Img[FN.C_Y:FN.C_Y + FN.Length, FN.C_X:FN.C_X + FN.Width]
+        self.A_1t5 = self.Img[A_1t5.C_Y:A_1t5.C_Y + A_1t5.Length, A_1t5.C_X:A_1t5.C_X + A_1t5.Width]
+        self.A_6t10 = self.Img[A_6t10.C_Y:A_6t10.C_Y + A_6t10.Length, A_6t10.C_X:A_6t10.C_X + A_6t10.Width]
+        self.A_11t15 = self.Img[A_11t15.C_Y:A_11t15.C_Y + A_11t15.Length, A_11t15.C_X:A_11t15.C_X + A_11t15.Width]
+        self.A_16t20 = self.Img[A_16t20.C_Y:A_16t20.C_Y + A_16t20.Length, A_16t20.C_X:A_16t20.C_X + A_16t20.Width]
+        self.A_21t25 = self.Img[A_21t25.C_Y:A_21t25.C_Y + A_21t25.Length, A_21t25.C_X:A_21t25.C_X + A_21t25.Width]
+        self.A_26t30 = self.Img[A_26t30.C_Y:A_26t30.C_Y + A_26t30.Length, A_26t30.C_X:A_26t30.C_X + A_26t30.Width]
+
+
 def ExtractAnswers(OMRImage):
-    # All the coordinates of answers are stored in macros.py file.
-    roi = OMRImage[51:511, 30:527]
-    cv2.imshow("roi", roi)
-    Image = cv2.rectangle(OMRImage, (30, 51), (526, 510), (0, 200, 0), 3)
-    cv2.imshow("Image", Image)
+    AnsImages = Answers(M.StN, M.MN, M.Class, M.Branch, M.BN, M.ScN, M.Section, M.FN, M.A_1t5,\
+                  M.A_6t10, M.A_11t15, M.A_16t20, M.A_21t25, M.A_26t30, OMRImage)
 
 
 ################################################################################
