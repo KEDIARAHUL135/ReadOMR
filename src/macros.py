@@ -54,3 +54,9 @@ A_16t20 = ROI_Answer(429, 721, 79, 81)          # Answers - 16 to 20
 A_21t25 = ROI_Answer(549, 721, 80, 81)          # Answers - 21 to 25
 A_26t30 = ROI_Answer(671, 722, 81, 80)          # Answers - 26 to 30
 
+
+# List of alphabets and numbers
+Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',\
+                    'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',\
+                    'Y', 'Z', '_']
+Numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_']

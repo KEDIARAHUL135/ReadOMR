@@ -39,10 +39,6 @@ class Answers:
 
 
 class GetAnswer:
-    Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',\
-                    'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',\
-                    'Y', 'Z']
-
     def __init__(self, Image, NumOfRows, NumOfCols, By_CorR, Alp_or_Num):
         self.Image = Image
         self.NumOfRows = NumOfRows
@@ -101,6 +97,17 @@ class GetAnswer:
                 MaxIndex[i] = IndexOfMax
 
         print(MaxIndex)
+
+        # Finding Answer from MaxIndex
+        AnswerLength = len(MaxIndex)        # Length of answer is equal to number of max index found
+
+        for i in range(AnswerLength):
+            if self.Alp_or_Num == 0:                        # Alphabet if 0
+                AnswerString += M.Alphabet[MaxIndex[i]]
+            elif self.Alp_or_Num == 1:                      # Number if 1
+                AnswerString += M.Numbers[MaxIndex[i]]
+
+        print(AnswerString)
 
     def MakeGrid(self):
         self.ThresholdImage()
