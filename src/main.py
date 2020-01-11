@@ -77,7 +77,6 @@ class GetAnswer:
 
         # Finding max index for all col/row in HistMatrix
         MaxIndex = np.zeros(HistMatrix.shape[1], dtype=int)
-        Max = IndexOfMax = 0
 
         for i in range(self.NumOfCols):
             IndexOfMax = Max = 0
