@@ -42,16 +42,12 @@ class GetAnswer:
                     'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',\
                     'Y', 'Z']
 
-    def __init__(self, Image, Start_X, Start_Y, Dist_C, Dist_R, By_CorR, Alp_or_Num, CorrectionFactor = 0):
+    def __init__(self, Image, NumOfRows, NumOfCols, By_CorR, Alp_or_Num):
         self.Image = Image
-        self.Start_X = Start_X
-        self.Start_Y = Start_Y
-        self.Dist_C = Dist_C
-        self.Dist_R = Dist_R
+        self.NumOfRows = NumOfRows
+        self.NumOfCols = NumOfCols
         self.By_CorR = By_CorR
         self.Alp_or_Num = Alp_or_Num
-        self.CorrectionFactor = CorrectionFactor
-
 
     def ThresholdImage(self):
         self.Image = cv2.cvtColor(self.Image, cv2.COLOR_BGR2GRAY)
@@ -60,29 +56,38 @@ class GetAnswer:
         cv2.imshow("Thresholded", self.Image)
 
 
+    def MakeGrid(self):
+        self.ThresholdImage()
+
+        Height, Width = self.Image.shape[:2]
+        WidthOfGrid = (Width//self.NumOfCols)
+        HeightOfGrid = (Height//self.NumOfRows)
+        RemainderOfWidth = ((Width/self.NumOfCols) - WidthOfGrid)
+        RemainderOfHeight = ((Height/self.NumOfRows) - HeightOfGrid)
+        WidthPixelSkipped = 0
+        HeightPixelSkipped = 0
+
+        for i in range(0, Width, WidthOfGrid):
+            WidthPixelSkipped += RemainderOfWidth
+            while (WidthPixelSkipped >= 1):
+                WidthPixelSkipped -= 1
+                i += 1
+
+            for j in range(0, Height, HeightOfGrid):
+                HeightPixelSkipped += RemainderOfHeight
+                while (HeightPixelSkipped >= 1):
+                    HeightPixelSkipped -= 1
+                    j += 1
+
+                cv2.rectangle(self.Image, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
+        cv2.imshow("GridImage", self.Image)
+        cv2.waitKey(0)
+
+
     def FindFinalAnswer(self):
         AnswerString = ""
-        Width, Height = self.Image.shape[:2]
+        Height, Width = self.Image.shape[:2]
         CorrectionFactorCount = NumOfJumps = 0
-
-        self.ThresholdImage()
-        StartCircle = StopCircle = 0
-        for i in range(self.Start_X, Width, self.Dist_C):
-            for j in range(self.Start_Y, Height, self.Dist_R):
-                if CorrectionFactorCount >= 1:
-                    CorrectionFactorCount = 0
-                    j -= self.CorrectionFactor
-
-                if self.Image[j, i] == 0:
-                    AnswerString = AnswerString + self.Alphabet[NumOfJumps]
-                    NumOfJumps = 0
-                    CorrectionFactorCount = 0
-
-                else:
-                    NumOfJumps += 1
-                    CorrectionFactorCount += 1
-
-
 
         print(AnswerString)
 
@@ -255,12 +260,29 @@ def ExtractAnswers(OMRImage):
     AnsImages = Answers(M.StN, M.MN, M.Class, M.Branch, M.BN, M.ScN, M.Section, M.FN, M.A_1t5,\
                   M.A_6t10, M.A_11t15, M.A_16t20, M.A_21t25, M.A_26t30, OMRImage)
 
-    PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
+    #PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
 
-    Dummy = GetAnswer(AnsImages.StN, 12, 11, 20, 18, 'C', 1, 1)
+    StN = GetAnswer(AnsImages.StN, 25, 25, 'C', 0)
+    MN = GetAnswer(AnsImages.MN, 10, 10, 'C', 1)
+    Class = GetAnswer(AnsImages.Class, 1, 7, 'R', 1)
+    Section = GetAnswer(AnsImages.Section, 2, 7, 'R', 0)
+    A_1t5 = GetAnswer(AnsImages.A_1t5, 5, 4, 'R', 0)
+    A_6t10 = GetAnswer(AnsImages.A_6t10, 5, 4, 'R', 0)
+    A_11t15 = GetAnswer(AnsImages.A_11t15, 5, 4, 'R', 0)
+    A_16t20 = GetAnswer(AnsImages.A_16t20, 5, 4, 'R', 0)
+    A_21t25 = GetAnswer(AnsImages.A_21t25, 5, 4, 'R', 0)
+    A_26t30 = GetAnswer(AnsImages.A_26t30, 5, 4, 'R', 0)
 
-    Dummy.FindFinalAnswer()
-
+    StN.MakeGrid()
+    MN.MakeGrid()
+    Class.MakeGrid()
+    Section.MakeGrid()
+    A_1t5.MakeGrid()
+    A_6t10.MakeGrid()
+    A_11t15.MakeGrid()
+    A_16t20.MakeGrid()
+    A_21t25.MakeGrid()
+    A_26t30.MakeGrid()
 
 
 ################################################################################

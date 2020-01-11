@@ -39,18 +39,18 @@ class ROI_Answer:
         self.Length = Length
 
 
-StN = ROI_Answer(30, 51, 497, 460)              # Student's Name
-MN = ROI_Answer(548, 234, 212, 178)             # Mobile Number
-Class = ROI_Answer(591, 446, 147, 17)           # Class
+StN = ROI_Answer(28, 49, 501, 464)              # Student's Name
+MN = ROI_Answer(547, 236, 213, 182)             # Mobile Number
+Class = ROI_Answer(586, 446, 155, 17)           # Class
 Branch = ROI_Answer(82, 634, 649, 29)           # Branch
 BN = ROI_Answer(549, 27, 213, 129)              # Booklet Number
 ScN = ROI_Answer(125, 602, 606, 31)             # School Name
 Section = ROI_Answer(613, 478, 148, 38)         # Section
 FN = ROI_Answer(124, 664, 607, 29)              # Father's Name
-A_1t5 = ROI_Answer(66, 720, 81, 80)             # Answers - 1 to 5
-A_6t10 = ROI_Answer(188, 720, 80, 80)           # Answers - 6 to 10
-A_11t15 = ROI_Answer(309, 719, 79, 81)          # Answers - 11 to 15
-A_16t20 = ROI_Answer(429, 719, 79, 81)          # Answers - 16 to 20
-A_21t25 = ROI_Answer(549, 719, 80, 81)          # Answers - 21 to 25
-A_26t30 = ROI_Answer(671, 720, 81, 80)          # Answers - 26 to 30
+A_1t5 = ROI_Answer(64, 720, 85, 80)             # Answers - 1 to 5
+A_6t10 = ROI_Answer(188, 722, 80, 80)           # Answers - 6 to 10
+A_11t15 = ROI_Answer(309, 721, 79, 81)          # Answers - 11 to 15
+A_16t20 = ROI_Answer(429, 721, 79, 81)          # Answers - 16 to 20
+A_21t25 = ROI_Answer(549, 721, 80, 81)          # Answers - 21 to 25
+A_26t30 = ROI_Answer(671, 722, 81, 80)          # Answers - 26 to 30
 
