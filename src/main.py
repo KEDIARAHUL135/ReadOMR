@@ -37,6 +37,56 @@ class Answers:
         self.A_26t30 = self.Img[A_26t30.C_Y:A_26t30.C_Y + A_26t30.Length, A_26t30.C_X:A_26t30.C_X + A_26t30.Width]
 
 
+class GetAnswer:
+    Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',\
+                    'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',\
+                    'Y', 'Z']
+
+    def __init__(self, Image, Start_X, Start_Y, Dist_C, Dist_R, By_CorR, Alp_or_Num, CorrectionFactor = 0):
+        self.Image = Image
+        self.Start_X = Start_X
+        self.Start_Y = Start_Y
+        self.Dist_C = Dist_C
+        self.Dist_R = Dist_R
+        self.By_CorR = By_CorR
+        self.Alp_or_Num = Alp_or_Num
+        self.CorrectionFactor = CorrectionFactor
+
+
+    def ThresholdImage(self):
+        self.Image = cv2.cvtColor(self.Image, cv2.COLOR_BGR2GRAY)
+        ret, self.Image = cv2.threshold(self.Image, 75, 255, cv2.THRESH_BINARY)
+
+        cv2.imshow("Thresholded", self.Image)
+
+
+    def FindFinalAnswer(self):
+        AnswerString = ""
+        Width, Height = self.Image.shape[:2]
+        CorrectionFactorCount = NumOfJumps = 0
+
+        self.ThresholdImage()
+        StartCircle = StopCircle = 0
+        for i in range(self.Start_X, Width, self.Dist_C):
+            for j in range(self.Start_Y, Height, self.Dist_R):
+                if CorrectionFactorCount >= 1:
+                    CorrectionFactorCount = 0
+                    j -= self.CorrectionFactor
+
+                if self.Image[j, i] == 0:
+                    AnswerString = AnswerString + self.Alphabet[NumOfJumps]
+                    NumOfJumps = 0
+                    CorrectionFactorCount = 0
+
+                else:
+                    NumOfJumps += 1
+                    CorrectionFactorCount += 1
+
+
+
+        print(AnswerString)
+
+
 ################################################################################
 # Function      : HoughCircleDetection
 # Parameter     : GrayImage - It contains gray scale image of Input Image
@@ -205,8 +255,11 @@ def ExtractAnswers(OMRImage):
     AnsImages = Answers(M.StN, M.MN, M.Class, M.Branch, M.BN, M.ScN, M.Section, M.FN, M.A_1t5,\
                   M.A_6t10, M.A_11t15, M.A_16t20, M.A_21t25, M.A_26t30, OMRImage)
 
-    PrintImages(AnsImages= AnsImages)
+    PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
 
+    Dummy = GetAnswer(AnsImages.StN, 12, 11, 20, 18, 'C', 1, 1)
+
+    Dummy.FindFinalAnswer()
 
 
 

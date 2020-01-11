@@ -12,7 +12,7 @@
 
 
 # Input Image Path
-InputImagePath = "InputImages/Blank.jpeg"
+InputImagePath = "InputImages/Filled1.1.jpeg"
 
 
 # Size of OMR Sheet - square of length -> Size
