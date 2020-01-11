@@ -80,7 +80,8 @@ class GetAnswer:
             MaxIndex = np.zeros(HistMatrix.shape[1], dtype=int)
 
             for i in range(self.NumOfCols):
-                IndexOfMax = Max = 0
+                IndexOfMax = -1
+                Max = 0
                 for j in range(self.NumOfRows):
                     if Max < HistMatrix[j, i]:
                         Max = HistMatrix[j, i]
@@ -91,7 +92,8 @@ class GetAnswer:
             MaxIndex = np.zeros(HistMatrix.shape[0], dtype=int)
 
             for i in range(self.NumOfRows):
-                IndexOfMax = Max = 0
+                IndexOfMax = -1
+                Max = 0
                 for j in range(self.NumOfCols):
                     if Max < HistMatrix[i, j]:
                         Max = HistMatrix[i, j]
