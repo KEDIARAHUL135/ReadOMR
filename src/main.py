@@ -76,20 +76,29 @@ class GetAnswer:
         AnswerString = ""
 
         # Finding max index for all col/row in HistMatrix
-        MaxIndex = np.zeros(HistMatrix.shape[1], dtype=int)
+        if self.By_CorR == 'C':
+            MaxIndex = np.zeros(HistMatrix.shape[1], dtype=int)
 
-        for i in range(self.NumOfCols):
-            IndexOfMax = Max = 0
-            for j in range(self.NumOfRows):
-                if Max < HistMatrix[j, i]:
-                    Max = HistMatrix[j, i]
-                    IndexOfMax = j
-            MaxIndex[i] = IndexOfMax
+            for i in range(self.NumOfCols):
+                IndexOfMax = Max = 0
+                for j in range(self.NumOfRows):
+                    if Max < HistMatrix[j, i]:
+                        Max = HistMatrix[j, i]
+                        IndexOfMax = j
+                MaxIndex[i] = IndexOfMax
+
+        elif self.By_CorR == 'R':
+            MaxIndex = np.zeros(HistMatrix.shape[0], dtype=int)
+
+            for i in range(self.NumOfRows):
+                IndexOfMax = Max = 0
+                for j in range(self.NumOfCols):
+                    if Max < HistMatrix[i, j]:
+                        Max = HistMatrix[i, j]
+                        IndexOfMax = j
+                MaxIndex[i] = IndexOfMax
 
         print(MaxIndex)
-
-        print(AnswerString)
-
 
     def MakeGrid(self):
         self.ThresholdImage()
@@ -311,6 +320,7 @@ def ExtractAnswers(OMRImage):
 
     #PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
 
+    # Creating objects for different Questions
     StN = GetAnswer(AnsImages.StN, 26, 25, 'C', 0)
     MN = GetAnswer(AnsImages.MN, 10, 10, 'C', 1)
     Class = GetAnswer(AnsImages.Class, 1, 7, 'R', 1)
