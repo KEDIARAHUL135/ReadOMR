@@ -319,7 +319,7 @@ def ExtractAnswers(OMRImage):
     AnsImages = Answers(M.StN, M.MN, M.Class, M.Branch, M.BN, M.ScN, M.Section, M.FN, M.A_1t5,\
                   M.A_6t10, M.A_11t15, M.A_16t20, M.A_21t25, M.A_26t30, OMRImage)
 
-    #PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
+    PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
 
     # Creating objects for different Questions
     StN = GetAnswer(AnsImages.StN, 25, 25, 'C', 0)  # NOTE - There is a bug her - Num of rows should br 26 instead of 25
@@ -344,9 +344,7 @@ def ExtractAnswers(OMRImage):
     AnswerDict["Answers 21-25"] = A_21t25.MakeGrid()
     AnswerDict["Answers 26-30"] = A_26t30.MakeGrid()
 
-    print()
-    print()
-    print(AnswerDict)
+    return AnswerDict
 
 
 ################################################################################
@@ -375,13 +373,17 @@ def CropReqOMR():
     CornerCircles = FindCornerCircles(Circles)
 
     ## Print corner circles
-    # PrintImages(CornerCircles, True)      # Uncomment to print corner circles
+    PrintImages(CornerCircles, True)      # Uncomment to print corner circles
 
     # Applying Projective transformation.
     CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
 
     # Extract different answers
-    ExtractAnswers(CroppedOMRSheetImage)
+    AnswerDict = ExtractAnswers(CroppedOMRSheetImage)
+
+    print()
+    print()
+    print(AnswerDict)
 
 
 # Crop the required OMR sheet for answer detection
