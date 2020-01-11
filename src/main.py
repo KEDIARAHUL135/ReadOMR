@@ -8,6 +8,7 @@
 
 import cv2
 import numpy as np
+#import matplotlib as plt
 import src.macros as M
 
 
@@ -48,12 +49,35 @@ class GetAnswer:
         self.NumOfCols = NumOfCols
         self.By_CorR = By_CorR
         self.Alp_or_Num = Alp_or_Num
+        self.HistogramMatrix = np.zeros((NumOfRows, NumOfCols), dtype=int)
 
     def ThresholdImage(self):
         self.Image = cv2.cvtColor(self.Image, cv2.COLOR_BGR2GRAY)
         ret, self.Image = cv2.threshold(self.Image, 75, 255, cv2.THRESH_BINARY)
 
         cv2.imshow("Thresholded", self.Image)
+
+
+    def FindHistogram(self, i, j, WidthOfGrid, HeightOfGrid):
+        GridImage = self.Image[j:j+HeightOfGrid, i:i+WidthOfGrid]
+        Height, Width = GridImage.shape[:2]
+        NumOfWhite = NumOfBlack = 0
+
+        for i in range(Width):
+            for j in range(Height):
+                if GridImage[j, i] == 255:
+                    NumOfWhite += 1
+                else:
+                    NumOfBlack += 1
+
+        return NumOfWhite, NumOfBlack
+
+    def FindFinalAnswer(self, HistMatrix):
+        AnswerString = ""
+
+        
+
+        print(AnswerString)
 
 
     def MakeGrid(self):
@@ -66,6 +90,9 @@ class GetAnswer:
         RemainderOfHeight = ((Height/self.NumOfRows) - HeightOfGrid)
         WidthPixelSkipped = 0
         HeightPixelSkipped = 0
+        HistMatrix = np.zeros((self.NumOfRows, self.NumOfCols), dtype=int)
+        HistMatrix_i = HistMatrix_j = 0
+
 
         for i in range(0, Width, WidthOfGrid):
             WidthPixelSkipped += RemainderOfWidth
@@ -73,23 +100,34 @@ class GetAnswer:
                 WidthPixelSkipped -= 1
                 i += 1
 
+            HistMatrix_j = 0
             for j in range(0, Height, HeightOfGrid):
                 HeightPixelSkipped += RemainderOfHeight
                 while (HeightPixelSkipped >= 1):
                     HeightPixelSkipped -= 1
                     j += 1
 
-                cv2.rectangle(self.Image, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
+                #cv2.rectangle(self.Image, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
+                NumOfWhite, NumOfBlack = self.FindHistogram(i, j, WidthOfGrid, HeightOfGrid)
+
+                HistMatrix[HistMatrix_j, HistMatrix_i] = NumOfBlack
+
+                HistMatrix_j += 1
+
+                if HistMatrix_j >= self.NumOfRows:
+                    break
+
+            HistMatrix_i += 1
+            if HistMatrix_i >= self.NumOfCols:
+                break
+
+        self.FindFinalAnswer(HistMatrix)
+
         cv2.imshow("GridImage", self.Image)
         cv2.waitKey(0)
 
 
-    def FindFinalAnswer(self):
-        AnswerString = ""
-        Height, Width = self.Image.shape[:2]
-        CorrectionFactorCount = NumOfJumps = 0
 
-        print(AnswerString)
 
 
 ################################################################################
@@ -262,7 +300,7 @@ def ExtractAnswers(OMRImage):
 
     #PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
 
-    StN = GetAnswer(AnsImages.StN, 25, 25, 'C', 0)
+    StN = GetAnswer(AnsImages.StN, 26, 25, 'C', 0)
     MN = GetAnswer(AnsImages.MN, 10, 10, 'C', 1)
     Class = GetAnswer(AnsImages.Class, 1, 7, 'R', 1)
     Section = GetAnswer(AnsImages.Section, 2, 7, 'R', 0)
