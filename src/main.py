@@ -8,7 +8,6 @@
 
 import cv2
 import numpy as np
-#import matplotlib as plt
 import src.macros as M
 
 
@@ -51,8 +50,6 @@ class GetAnswer:
         self.Image = cv2.cvtColor(self.Image, cv2.COLOR_BGR2GRAY)
         ret, self.Image = cv2.threshold(self.Image, 75, 255, cv2.THRESH_BINARY)
 
-        cv2.imshow("Thresholded", self.Image)
-
 
     def FindHistogram(self, i, j, WidthOfGrid, HeightOfGrid):
         GridImage = self.Image[j:j+HeightOfGrid, i:i+WidthOfGrid]
@@ -67,6 +64,7 @@ class GetAnswer:
                     NumOfBlack += 1
 
         return NumOfWhite, NumOfBlack
+
 
     def FindFinalAnswer(self, HistMatrix):
         AnswerString = ""
@@ -96,8 +94,6 @@ class GetAnswer:
                         IndexOfMax = j
                 MaxIndex[i] = IndexOfMax
 
-        print(MaxIndex)
-
         # Finding Answer from MaxIndex
         AnswerLength = len(MaxIndex)        # Length of answer is equal to number of max index found
 
@@ -107,7 +103,8 @@ class GetAnswer:
             elif self.Alp_or_Num == 1:                      # Number if 1
                 AnswerString += M.Numbers[MaxIndex[i]]
 
-        print(AnswerString)
+        return AnswerString
+
 
     def MakeGrid(self):
         self.ThresholdImage()
@@ -150,13 +147,7 @@ class GetAnswer:
             if HistMatrix_i >= self.NumOfCols:
                 break
 
-        self.FindFinalAnswer(HistMatrix)
-
-        cv2.imshow("GridImage", self.Image)
-        cv2.waitKey(0)
-
-
-
+        return self.FindFinalAnswer(HistMatrix)
 
 
 ################################################################################
@@ -324,13 +315,14 @@ def ProjectiveTransform(CornerCircles):
 
 
 def ExtractAnswers(OMRImage):
+    AnswerDict = {}
     AnsImages = Answers(M.StN, M.MN, M.Class, M.Branch, M.BN, M.ScN, M.Section, M.FN, M.A_1t5,\
                   M.A_6t10, M.A_11t15, M.A_16t20, M.A_21t25, M.A_26t30, OMRImage)
 
     #PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
 
     # Creating objects for different Questions
-    StN = GetAnswer(AnsImages.StN, 26, 25, 'C', 0)
+    StN = GetAnswer(AnsImages.StN, 25, 25, 'C', 0)  # NOTE - There is a bug her - Num of rows should br 26 instead of 25
     MN = GetAnswer(AnsImages.MN, 10, 10, 'C', 1)
     Class = GetAnswer(AnsImages.Class, 1, 7, 'R', 1)
     Section = GetAnswer(AnsImages.Section, 2, 7, 'R', 0)
@@ -341,16 +333,20 @@ def ExtractAnswers(OMRImage):
     A_21t25 = GetAnswer(AnsImages.A_21t25, 5, 4, 'R', 0)
     A_26t30 = GetAnswer(AnsImages.A_26t30, 5, 4, 'R', 0)
 
-    StN.MakeGrid()
-    MN.MakeGrid()
-    Class.MakeGrid()
-    Section.MakeGrid()
-    A_1t5.MakeGrid()
-    A_6t10.MakeGrid()
-    A_11t15.MakeGrid()
-    A_16t20.MakeGrid()
-    A_21t25.MakeGrid()
-    A_26t30.MakeGrid()
+    AnswerDict["Student's Name"] = StN.MakeGrid()
+    AnswerDict["Mobile Number"] = MN.MakeGrid()
+    AnswerDict["Class"] = Class.MakeGrid()
+    AnswerDict["Section"] = Section.MakeGrid()
+    AnswerDict["Answers 1-5"] = A_1t5.MakeGrid()
+    AnswerDict["Answers 6-10"] = A_6t10.MakeGrid()
+    AnswerDict["Answers 11-15"] = A_11t15.MakeGrid()
+    AnswerDict["Answers 16-20"] = A_16t20.MakeGrid()
+    AnswerDict["Answers 21-25"] = A_21t25.MakeGrid()
+    AnswerDict["Answers 26-30"] = A_26t30.MakeGrid()
+
+    print()
+    print()
+    print(AnswerDict)
 
 
 ################################################################################
@@ -384,8 +380,6 @@ def CropReqOMR():
     # Applying Projective transformation.
     CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
 
-    cv2.imshow("PerfectOMR", CroppedOMRSheetImage)
-
     # Extract different answers
     ExtractAnswers(CroppedOMRSheetImage)
 
@@ -394,3 +388,4 @@ def CropReqOMR():
 CropReqOMR()
 
 cv2.waitKey(0)
+cv2.destroyAllWindows()
