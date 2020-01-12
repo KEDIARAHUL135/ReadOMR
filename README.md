@@ -5,16 +5,14 @@ This project aims to read information from a scanned OMR sheet.
 
 ### Installation
 
-It is preffered that you run this program in  PyCharm.
+Installation procedure is given in the file InstalltionProcess_python&opencv.pdf.
+Ignore last 2-3 points in which ask you to check the version from another file.
+PS - This installation process file was obtained in a competition of IIT Bombay recently named E-Yantra. The installation was a part of Task 0.1.
 
-#### Steps to installation:
-* Clone this repository on your Desktop.
-* Open Pycharm.
-* From the menu, select File -> Open. In the popup, select the folder clonned and press OK. 
-* Make sure that you have opencv and opencv contrib libraries installed. To do so, open terminal in pycharm and execute the following instructions:
-`$ pip3 install opencv-python`
-`$ pip3 install opencv-contrib-python`
-* After the installation is completed, from the menu, select Run ->   Run...
+After installing python and OpenCV on your desktop as shown, clone/download this repository and navigate to src folder.
+Right click on main.py file and select Edit with IDLE.
+Now run main.py file. 
+If a error arrises stating ----------
 
 
 ### About the project
@@ -52,6 +50,3 @@ If I had more time, all the bugs would be solved and answer would be stored in j
 
 ### References
 The project is made completely by me with the help in some pre-defined function from open source website link opencv.org, stackoverflow, we3shools, etc.
-
-
-
