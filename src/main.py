@@ -17,7 +17,25 @@ NewSize = (M.Size, M.Size)
 InputImage = cv2.resize(InputImage, NewSize)
 
 
+################################################################################
+# Class         : Answers
+# Methods       : __init__ - This method crops the omr for a question
+#                            as per parameters given.
+# Description   : This class is called to crop omr for different questions.
+# Return        : -
+################################################################################
 class Answers:
+    ################################################################################
+    # Method        : __init__
+    # Parameter     : OMRImage/Img - It holds the OMR Image after corner
+    #                                detection and projective transform
+    #                 {Rest all the parameters have their usual meanings as
+    #                 mentioned in macros.py file. Each of these parameter is
+    #                 for different question.}
+    # Description   : This method crops the image for different question as
+    #                 per parameters provided in ROI_Answer class.
+    # Return        : -
+    ################################################################################
     def __init__(self, StN, MN, Class, Branch, BN, ScN, Section, FN, A_1t5, A_6t10,\
                  A_11t15, A_16t20, A_21t25, A_26t30, OMRImage):
         self.Img = OMRImage
@@ -37,7 +55,44 @@ class Answers:
         self.A_26t30 = self.Img[A_26t30.C_Y:A_26t30.C_Y + A_26t30.Length, A_26t30.C_X:A_26t30.C_X + A_26t30.Width]
 
 
+################################################################################
+# Class         : GetAnswer
+# Methods       : __init__ - This method initialises the local variables
+#                            for the question.
+#                 ThresholdImage - This method converts the image to
+#                                  thresholded grayscale.
+#                 FindHistogram - This method takes in coordinates of a grid
+#                                 and finds number of black and num of white
+#                                 pixels in each grid.
+#                 FindFinalAnswer - This method finds the answer string of
+#                                   a particular question.
+#                 MakeGrid - This method forms grid and calls other methods
+#                            to find answer string.
+# Description   : This class is called to get the final answer string.
+# Return        : -
+################################################################################
 class GetAnswer:
+    ################################################################################
+    # Method        : __init__
+    # Parameter     : Image - It holds the image of answer for a question
+    #                 NumOfRows - It stores the number of rows present in OMR
+    #                             for that question.
+    #                 NumOfCols - It stores the number of cols present in OMR
+    #                             for that question.
+    #                 By_Cor_R - It tells that the answer is present in row wise
+    #                            fashion or by column wise. {Row is horizontal
+    #                            lines and Column is vertical line}.
+    #                            Its value - For Row wise - 'R'
+    #                                        For column wise - 'C'.
+    #                 Alp_or_Num - It tells that answer is in alphabets or numbers.
+    #                              0 for Alphabet and 1 for number.
+    #                 HistogramMatrix - It stores the number of Black/White pixel
+    #                                   in each grid in a 2D array. Each element
+    #                                   corresponds to the grid at same place in
+    #                                   the image.
+    # Description   : This method initialises different parameters for the question.
+    # Return        : -
+    ################################################################################
     def __init__(self, Image, NumOfRows, NumOfCols, By_CorR, Alp_or_Num):
         self.Image = Image
         self.NumOfRows = NumOfRows
@@ -45,12 +100,28 @@ class GetAnswer:
         self.By_CorR = By_CorR
         self.Alp_or_Num = Alp_or_Num
         self.HistogramMatrix = np.zeros((NumOfRows, NumOfCols), dtype=int)
+        self.AnswerString = ""
 
+    ################################################################################
+    # Method        : ThresholdImage
+    # Parameter     : -
+    # Description   : This method converts the image to thresholded grayscale.
+    # Return        : -
+    ################################################################################
     def ThresholdImage(self):
         self.Image = cv2.cvtColor(self.Image, cv2.COLOR_BGR2GRAY)
         ret, self.Image = cv2.threshold(self.Image, 75, 255, cv2.THRESH_BINARY)
 
-
+    ################################################################################
+    # Method        : FindHistogram
+    # Parameter     : (i, j) - This is the top left coordinate of a grid box.
+    #                 WidthOfGrid - This contains the width of the grid box.
+    #                 HeightOfGrid - This contains the height of the grid box.
+    #                 NumOfWhite - It counts the number of White pixel in the grid box.
+    #                 NumOfBlack - It counts the number of Black pixel in the grid box.
+    # Description   : This method converts the image to thresholded grayscale.
+    # Return        : NumOfWhite, NumOfBlack
+    ################################################################################
     def FindHistogram(self, i, j, WidthOfGrid, HeightOfGrid):
         GridImage = self.Image[j:j+HeightOfGrid, i:i+WidthOfGrid]
         Height, Width = GridImage.shape[:2]
@@ -65,32 +136,42 @@ class GetAnswer:
 
         return NumOfWhite, NumOfBlack
 
-
-    def FindFinalAnswer(self, HistMatrix):
-        AnswerString = ""
-
+    ################################################################################
+    # Method        : FindFinalAnswer
+    # Parameter     : MaxIndex - It is a array which stores the index corresponding
+    #                            to the element containing maximum number of black
+    #                            pixel for each row/col.
+    #                 IndexOfMax & Max - These 2 are temporary variables for
+    #                                    finding MaxIndex.
+    #                 AnswerLength - This holds the total number of characters
+    #                                the answer is holding{Length of MaxIndex}.
+    # Description   : This method finds element with maximum value in each row/col
+    #                 and according to that appends the final answer string.
+    # Return        : -
+    ################################################################################
+    def FindFinalAnswer(self):
         # Finding max index for all col/row in HistMatrix
         if self.By_CorR == 'C':
-            MaxIndex = np.zeros(HistMatrix.shape[1], dtype=int)
+            MaxIndex = np.zeros(self.HistogramMatrix.shape[1], dtype=int)
 
             for i in range(self.NumOfCols):
                 IndexOfMax = -1
                 Max = 0
                 for j in range(self.NumOfRows):
-                    if Max < HistMatrix[j, i]:
-                        Max = HistMatrix[j, i]
+                    if Max < self.HistogramMatrix[j, i]:
+                        Max = self.HistogramMatrix[j, i]
                         IndexOfMax = j
                 MaxIndex[i] = IndexOfMax
 
         elif self.By_CorR == 'R':
-            MaxIndex = np.zeros(HistMatrix.shape[0], dtype=int)
+            MaxIndex = np.zeros(self.HistogramMatrix.shape[0], dtype=int)
 
             for i in range(self.NumOfRows):
                 IndexOfMax = -1
                 Max = 0
                 for j in range(self.NumOfCols):
-                    if Max < HistMatrix[i, j]:
-                        Max = HistMatrix[i, j]
+                    if Max < self.HistogramMatrix[i, j]:
+                        Max = self.HistogramMatrix[i, j]
                         IndexOfMax = j
                 MaxIndex[i] = IndexOfMax
 
@@ -99,14 +180,33 @@ class GetAnswer:
 
         for i in range(AnswerLength):
             if self.Alp_or_Num == 0:                        # Alphabet if 0
-                AnswerString += M.Alphabet[MaxIndex[i]]
+                self.AnswerString += M.Alphabet[MaxIndex[i]]
             elif self.Alp_or_Num == 1:                      # Number if 1
-                AnswerString += M.Numbers[MaxIndex[i]]
+                self.AnswerString += M.Numbers[MaxIndex[i]]
 
-        return AnswerString
-
-
-    def MakeGrid(self):
+    ################################################################################
+    # Method        : MakeGrid_FindAnswer
+    # Parameter     : Height, Width - These hold the height and width respectively
+    #                                 of complete answer image.
+    #                 WidthOfGrid - This contains the width of the grid box.
+    #                 HeightOfGrid - This contains the height of the grid box.
+    #                 RemainderOfWidth, RemainderOfHeight - As the exact value of
+    #                       height and width of grid box contains decimal value
+    #                       also but pixel position value cannot be decimal so
+    #                       these two variables contains the decimal value of
+    #                       width and height of grid respectively.
+    #                 WidthPixelSkipped, HeightPixelSkipped - These variables
+    #                       count the decimal value of pixels skipped due to
+    #                       integer value of piel coordinate. When the become
+    #                       greater than 1, the pixel coordinate is increased
+    #                       by 1 to reduce error.
+    #                 HistMatrix_i, HistMatrix_j - These variables are used to
+    #                                              iterate over HistogramMatrix.
+    # Description   : This method finds element with maximum value in each row/col
+    #                 and according to that appends the final answer string.
+    # Return        : -
+    ################################################################################
+    def MakeGrid_FindAnswer(self):
         self.ThresholdImage()
 
         Height, Width = self.Image.shape[:2]
@@ -116,8 +216,7 @@ class GetAnswer:
         RemainderOfHeight = ((Height/self.NumOfRows) - HeightOfGrid)
         WidthPixelSkipped = 0
         HeightPixelSkipped = 0
-        HistMatrix = np.zeros((self.NumOfRows, self.NumOfCols), dtype=int)
-        HistMatrix_i = HistMatrix_j = 0
+        HistMatrix_i = 0
 
 
         for i in range(0, Width, WidthOfGrid):
@@ -133,13 +232,14 @@ class GetAnswer:
                     HeightPixelSkipped -= 1
                     j += 1
 
+                # Uncomment line to form grid on the image.
+                ## {NOTE - comment it again in order to see actual answer}
                 #cv2.rectangle(self.Image, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
-                NumOfWhite, NumOfBlack = self.FindHistogram(i, j, WidthOfGrid, HeightOfGrid)
 
-                HistMatrix[HistMatrix_j, HistMatrix_i] = NumOfBlack
+                NumOfWhite, NumOfBlack = self.FindHistogram(i, j, WidthOfGrid, HeightOfGrid)
+                self.HistogramMatrix[HistMatrix_j, HistMatrix_i] = NumOfBlack
 
                 HistMatrix_j += 1
-
                 if HistMatrix_j >= self.NumOfRows:
                     break
 
@@ -147,7 +247,7 @@ class GetAnswer:
             if HistMatrix_i >= self.NumOfCols:
                 break
 
-        return self.FindFinalAnswer(HistMatrix)
+        self.FindFinalAnswer()
 
 
 ################################################################################
@@ -273,7 +373,7 @@ def PrintImages(CornerCircles = None, PrintCC = None, AnsImages = None):
 # Description   : This function calls suitable functions one by one for
 #                 detecting circles, and the rearranging/resizing the OMR
 #                 sheet so that then the answers can be found from OMR Sheet.
-# Return        : -
+# Return        : OutputImage
 ################################################################################
 def ProjectiveTransform(CornerCircles):
 
@@ -314,15 +414,29 @@ def ProjectiveTransform(CornerCircles):
     return OutputImage
 
 
+################################################################################
+# Function      : ExtractAnswers
+# Parameter     : AnswerDict - It is the answer dictonary for each question.
+#                 AnsImages - It is the object of class Answers containing
+#                             cropped images of answers for each question.
+#                 {Rest all the parameters have their usual meanings as
+#                 mentioned in macros.py file. Each of these parameter is
+#                 for different question.}
+# Description   : This function initialises objects for different questions
+#                 and then calls suitable method to fnd answer and then
+#                 stores the answers in a dictonary.
+# Return        : AnswerDict
+################################################################################
 def ExtractAnswers(OMRImage):
     AnswerDict = {}
     AnsImages = Answers(M.StN, M.MN, M.Class, M.Branch, M.BN, M.ScN, M.Section, M.FN, M.A_1t5,\
                   M.A_6t10, M.A_11t15, M.A_16t20, M.A_21t25, M.A_26t30, OMRImage)
 
-    PrintImages(AnsImages= AnsImages)    # Uncomment to see all the answer images
+    PrintImages(AnsImages=AnsImages)    # Uncomment to see all the answer images
 
     # Creating objects for different Questions
-    StN = GetAnswer(AnsImages.StN, 25, 25, 'C', 0)  # NOTE - There is a bug her - Num of rows should br 26 instead of 25
+    ## NOTE - Pass the parameters carefully for each question.
+    StN = GetAnswer(AnsImages.StN, 25, 25, 'C', 0)  # NOTE - There is a bug here- Num of rows should br 26 instead of 25
     MN = GetAnswer(AnsImages.MN, 10, 10, 'C', 1)
     Class = GetAnswer(AnsImages.Class, 1, 7, 'R', 1)
     Section = GetAnswer(AnsImages.Section, 2, 7, 'R', 0)
@@ -333,22 +447,33 @@ def ExtractAnswers(OMRImage):
     A_21t25 = GetAnswer(AnsImages.A_21t25, 5, 4, 'R', 0)
     A_26t30 = GetAnswer(AnsImages.A_26t30, 5, 4, 'R', 0)
 
-    AnswerDict["Student's Name"] = StN.MakeGrid()
-    AnswerDict["Mobile Number"] = MN.MakeGrid()
-    AnswerDict["Class"] = Class.MakeGrid()
-    AnswerDict["Section"] = Section.MakeGrid()
-    AnswerDict["Answers 1-5"] = A_1t5.MakeGrid()
-    AnswerDict["Answers 6-10"] = A_6t10.MakeGrid()
-    AnswerDict["Answers 11-15"] = A_11t15.MakeGrid()
-    AnswerDict["Answers 16-20"] = A_16t20.MakeGrid()
-    AnswerDict["Answers 21-25"] = A_21t25.MakeGrid()
-    AnswerDict["Answers 26-30"] = A_26t30.MakeGrid()
+    StN.MakeGrid_FindAnswer()
+    MN.MakeGrid_FindAnswer()
+    Class.MakeGrid_FindAnswer()
+    Section.MakeGrid_FindAnswer()
+    A_1t5.MakeGrid_FindAnswer()
+    A_6t10.MakeGrid_FindAnswer()
+    A_11t15.MakeGrid_FindAnswer()
+    A_16t20.MakeGrid_FindAnswer()
+    A_21t25.MakeGrid_FindAnswer()
+    A_26t30.MakeGrid_FindAnswer()
+
+    AnswerDict["Student's Name"] = StN.AnswerString
+    AnswerDict["Mobile Number"] = MN.AnswerString
+    AnswerDict["Class"] = Class.AnswerString
+    AnswerDict["Section"] = Section.AnswerString
+    AnswerDict["Answers 1-5"] = A_1t5.AnswerString
+    AnswerDict["Answers 6-10"] = A_6t10.AnswerString
+    AnswerDict["Answers 11-15"] = A_11t15.AnswerString
+    AnswerDict["Answers 16-20"] = A_16t20.AnswerString
+    AnswerDict["Answers 21-25"] = A_21t25.AnswerString
+    AnswerDict["Answers 26-30"] = A_26t30.AnswerString
 
     return AnswerDict
 
 
 ################################################################################
-# Function      : CropReqOMR
+# Function      : CropOMR_FindAnswers
 # Parameter     : Circles - It contains information of all the circles
 #                           detected by HoughCircles function.
 #                           Information is - [x-coordinate of centre,
@@ -359,12 +484,13 @@ def ExtractAnswers(OMRImage):
 #                                        It is cropped in rectangle with the
 #                                        help of four printed corner circles
 #                                        of the OMR Sheet.
+#                 AnswerDict - It is the answer dictonary for each question.
 # Description   : This function calls suitable functions one by one for
 #                 detecting circles, and the rearranging/resizing the OMR
-#                 sheet so that then the answers can be found from OMR Sheet.
-# Return        : -
+#                 sheet and then the answers and found for each question.
+# Return        : AnswerDict
 ################################################################################
-def CropReqOMR():
+def CropOMR_FindAnswers():
     # Extract the corner four circle's centre point
     ## Apply Hough Circle Detection
     Circles = HoughCircleDetection()
@@ -381,13 +507,12 @@ def CropReqOMR():
     # Extract different answers
     AnswerDict = ExtractAnswers(CroppedOMRSheetImage)
 
-    print()
-    print()
-    print(AnswerDict)
+    return AnswerDict
 
 
 # Crop the required OMR sheet for answer detection
-CropReqOMR()
+AnswerDict = CropOMR_FindAnswers()
 
+print(AnswerDict)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
