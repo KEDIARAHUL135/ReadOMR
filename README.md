@@ -44,7 +44,6 @@ After that, for each answer we will make a grid across the answer image so that 
 ### Project Pending
 
 * Answers to questions School's Name, Branch, Father's Name and Booklet Number is not extracted but the images corresponding to those questions is cropped and stored in suitable variables. Another algo for reading text is to be applied on those images to get answer.
-* Answers to other questions are not stored in json file yet. They are just being printed in the terminal.
 
 
 ### Bugs

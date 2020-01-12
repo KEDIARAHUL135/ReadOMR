@@ -1,0 +1,12 @@
+{
+    "Student's Name": "TUSHAR_GAUTAM____________",
+    "Mobile Number": "8888666612",
+    "Class": "7",
+    "Section": "B_",
+    "Answers 1-5": "AB_DC",
+    "Answers 6-10": "C_BBD",
+    "Answers 11-15": "A_CBC",
+    "Answers 16-20": "C__B_",
+    "Answers 21-25": "ABCDD",
+    "Answers 26-30": "CC_BA"
+}

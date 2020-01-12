@@ -9,6 +9,7 @@
 import cv2
 import numpy as np
 import src.macros as M
+import json
 
 
 # Read Input and resize it
@@ -477,6 +478,18 @@ def ExtractAnswers(OMRImage):
 
 
 ################################################################################
+# Function      : StoreInJSON
+# Parameter     : AnswerDict - It is the answer dictonary for each question.
+# Description   : This function stores the answers in a json file named
+#                 "Answers.txt"
+# Return        : -
+################################################################################
+def StoreInJSON(AnswerDict):
+    with open('Answers.txt', 'w') as outfile:
+        json.dump(AnswerDict, outfile, indent=4)
+
+
+################################################################################
 # Function      : CropOMR_FindAnswers
 # Parameter     : Circles - It contains information of all the circles
 #                           detected by HoughCircles function.
@@ -511,12 +524,12 @@ def CropOMR_FindAnswers():
     # Extract different answers
     AnswerDict = ExtractAnswers(CroppedOMRSheetImage)
 
-    return AnswerDict
+    StoreInJSON(AnswerDict)
 
 
 # Crop the required OMR sheet for answer detection
-AnswerDict = CropOMR_FindAnswers()
+CropOMR_FindAnswers()
 
-print(AnswerDict)
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()
