@@ -50,7 +50,6 @@ After that, for each answer we will make a grid across the answer image so that 
 ### Bugs
 
 * In the Student's Name, total number of rows is 26 but the number of rows as input is given to be 25 for correct answer. Due to this the letter Z will probably not be detected.
-* Options of Class are starting from 4 due to which the answer output is comming 4 less than the original output.
 * If Section H to M are selected, the program will not be able to tell the proper answer as apart from other questions' options, in this question, the option are split into two rows.
 * For the Answers of questions 1 to 30, mostly the answers are detected correctly but sometimes the answers to 1 or 2 question are comming incorrect. This is due to the fact that answer coloured overshoots the assigned circle and enters the area of answer below or above that. Also another major reason to this is that the bottom two corner circles are too close to the answer options of the bottommost questions(5, 10, 15, 20, 25, 30) due to which the grid are not formed properly.
 

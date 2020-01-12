@@ -90,10 +90,13 @@ class GetAnswer:
     #                                   in each grid in a 2D array. Each element
     #                                   corresponds to the grid at same place in
     #                                   the image.
+    #                 AnswerString - It holds the answer to the question.
+    #                 StartFromIndex - It tells if the options are starting
+    #                                  from A/0 or any other alphabet/number.
     # Description   : This method initialises different parameters for the question.
     # Return        : -
     ################################################################################
-    def __init__(self, Image, NumOfRows, NumOfCols, By_CorR, Alp_or_Num):
+    def __init__(self, Image, NumOfRows, NumOfCols, By_CorR, Alp_or_Num, StartFromIndex = 0):
         self.Image = Image
         self.NumOfRows = NumOfRows
         self.NumOfCols = NumOfCols
@@ -101,6 +104,7 @@ class GetAnswer:
         self.Alp_or_Num = Alp_or_Num
         self.HistogramMatrix = np.zeros((NumOfRows, NumOfCols), dtype=int)
         self.AnswerString = ""
+        self.StartFromIndex = StartFromIndex
 
     ################################################################################
     # Method        : ThresholdImage
@@ -180,9 +184,9 @@ class GetAnswer:
 
         for i in range(AnswerLength):
             if self.Alp_or_Num == 0:                        # Alphabet if 0
-                self.AnswerString += M.Alphabet[MaxIndex[i]]
+                self.AnswerString += M.Alphabet[MaxIndex[i] + self.StartFromIndex]
             elif self.Alp_or_Num == 1:                      # Number if 1
-                self.AnswerString += M.Numbers[MaxIndex[i]]
+                self.AnswerString += M.Numbers[MaxIndex[i] + self.StartFromIndex]
 
     ################################################################################
     # Method        : MakeGrid_FindAnswer
@@ -438,7 +442,7 @@ def ExtractAnswers(OMRImage):
     ## NOTE - Pass the parameters carefully for each question.
     StN = GetAnswer(AnsImages.StN, 25, 25, 'C', 0)  # NOTE - There is a bug here- Num of rows should br 26 instead of 25
     MN = GetAnswer(AnsImages.MN, 10, 10, 'C', 1)
-    Class = GetAnswer(AnsImages.Class, 1, 7, 'R', 1)
+    Class = GetAnswer(AnsImages.Class, 1, 7, 'R', 1, 4)
     Section = GetAnswer(AnsImages.Section, 2, 7, 'R', 0)
     A_1t5 = GetAnswer(AnsImages.A_1t5, 5, 4, 'R', 0)
     A_6t10 = GetAnswer(AnsImages.A_6t10, 5, 4, 'R', 0)
