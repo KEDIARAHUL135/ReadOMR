@@ -20,7 +20,7 @@ Size = 800  # DONOT CHANGE THIS
 
 
 # Thershold length of corner circle
-## It menas that the corner circle must be present at what max distance from the boundary
+## It menas that the corner circle must be present at what max distance from the boundary(Keep this value small).
 ThreshLengthCC = 90
 
 
@@ -30,7 +30,11 @@ MinRadius = 0
 MaxRadius = 20
 
 
-# Rectangle Top Left Corner's Coordinates, length, and width for different answers
+# Threshold Image at this value:
+ThresholdImageAt = 75
+
+
+# Rectangle Top Left Corner's Coordinates, length, and width for different answers.
 class ROI_Answer:
     def __init__(self, Corner_X, Corner_Y, Width, Length):
         self.C_X = Corner_X
@@ -44,7 +48,7 @@ MN = ROI_Answer(547, 236, 213, 182)             # Mobile Number
 Class = ROI_Answer(586, 446, 155, 17)           # Class
 Branch = ROI_Answer(82, 634, 649, 29)           # Branch
 BN = ROI_Answer(549, 27, 213, 129)              # Booklet Number
-ScN = ROI_Answer(125, 602, 606, 31)             # School Name
+ScN = ROI_Answer(125, 602, 606, 31)             # School's Name
 Section = ROI_Answer(613, 478, 148, 38)         # Section
 FN = ROI_Answer(124, 664, 607, 29)              # Father's Name
 A_1t5 = ROI_Answer(64, 720, 85, 80)             # Answers - 1 to 5
@@ -56,6 +60,7 @@ A_26t30 = ROI_Answer(671, 722, 81, 80)          # Answers - 26 to 30
 
 
 # List of alphabets and numbers
+## Last character is '_' for empty answer(Blank space/No answer).
 Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',\
                     'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',\
                     'Y', 'Z', '_']

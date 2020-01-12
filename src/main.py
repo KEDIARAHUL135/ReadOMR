@@ -110,7 +110,7 @@ class GetAnswer:
     ################################################################################
     def ThresholdImage(self):
         self.Image = cv2.cvtColor(self.Image, cv2.COLOR_BGR2GRAY)
-        ret, self.Image = cv2.threshold(self.Image, 75, 255, cv2.THRESH_BINARY)
+        ret, self.Image = cv2.threshold(self.Image, M.ThresholdImageAt, 255, cv2.THRESH_BINARY)
 
     ################################################################################
     # Method        : FindHistogram
@@ -341,20 +341,20 @@ def PrintImages(CornerCircles = None, PrintCC = None, AnsImages = None):
 
     # Printing Answer Images
     if AnsImages != None:
-        cv2.imshow("1", AnsImages.StN)
-        cv2.imshow("2", AnsImages.MN)
-        cv2.imshow("3", AnsImages.Class)
-        cv2.imshow("4", AnsImages.Branch)
-        cv2.imshow("5", AnsImages.BN)
-        cv2.imshow("6", AnsImages.ScN)
-        cv2.imshow("7", AnsImages.Section)
-        cv2.imshow("8", AnsImages.FN)
-        cv2.imshow("9", AnsImages.A_1t5)
-        cv2.imshow("10", AnsImages.A_6t10)
-        cv2.imshow("11", AnsImages.A_11t15)
-        cv2.imshow("12", AnsImages.A_16t20)
-        cv2.imshow("13", AnsImages.A_21t25)
-        cv2.imshow("14", AnsImages.A_26t30)
+        cv2.imshow("Student's Name", AnsImages.StN)
+        cv2.imshow("Mobile Number", AnsImages.MN)
+        cv2.imshow("Class", AnsImages.Class)
+        cv2.imshow("Branch", AnsImages.Branch)
+        cv2.imshow("Booklet Number", AnsImages.BN)
+        cv2.imshow("School's Name", AnsImages.ScN)
+        cv2.imshow("Section", AnsImages.Section)
+        cv2.imshow("Father's Name", AnsImages.FN)
+        cv2.imshow("Answers - 1 to 5", AnsImages.A_1t5)
+        cv2.imshow("Answers - 6 to 10", AnsImages.A_6t10)
+        cv2.imshow("Answers - 11 to 15", AnsImages.A_11t15)
+        cv2.imshow("Answers - 16 to 20", AnsImages.A_16t20)
+        cv2.imshow("Answers - 21 to 25", AnsImages.A_21t25)
+        cv2.imshow("Answers - 26 to 30", AnsImages.A_26t30)
 
 
 ################################################################################
