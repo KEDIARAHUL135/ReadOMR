@@ -11,11 +11,16 @@ PS - This installation process file was obtained in a competition of IIT Bombay 
 
 After installing python and OpenCV on your desktop as shown, clone/download this repository and navigate to src folder.
 Right click on main.py file and select Edit with IDLE.
+
 Now run main.py file. 
+
 If a error arrises stating -
+
 `import src.macros as M
 ModuleNotFoundError: No module named 'src'`
+
 Then simply remove "src." from `$ import src.macros as M` thus making it -
+
 `$ import macros as M`
 
 ### About the project
