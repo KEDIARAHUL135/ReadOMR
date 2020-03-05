@@ -40,6 +40,9 @@ EXPAND_BY = (0, 0, 0, 7)            # Size in pixel by which to want to expand r
                                     # Last element to expand wrt bottom edge.
 
 
+# Objects are being created for every question
+# Parameters are in this order -
+# Corner_X, Corner_Y, Width, Length, NumOfRows, NumOfCols, By_CorR, Alp_or_Num, StartFromIndex=0
 StN = GA.FindAnswer(28, 49, 501, 464, 25, 25, 'C', 0)       # Student's Name
 MN = GA.FindAnswer(547, 236, 213, 182, 10, 10, 'C', 1)      # Mobile Number
 Class = GA.FindAnswer(586, 440, 155, 17, 1, 7, 'R', 1, 4)   # Class
