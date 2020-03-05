@@ -10,6 +10,8 @@
 #                 also enhance the output of the code.
 ################################################################################
 
+import numpy as np
+
 
 # Input Image Path
 InputImagePath = "InputImages/Filled2.1.jpeg"
@@ -20,7 +22,7 @@ Size = 800  # DONOT CHANGE THIS
 
 
 # Thershold length of corner circle
-## It menas that the corner circle must be present at what max distance from the boundary(Keep this value small).
+## It means that the corner circle must be present at what max distance from the boundary(Keep this value small).
 ThreshLengthCC = 90
 
 
@@ -65,3 +67,34 @@ Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',\
                     'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',\
                     'Y', 'Z', '_']
 Numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_']
+
+
+class AnswerBlockDetails:
+    def __init__(self, Corner_X, Corner_Y, Width, Length, NumOfRows, NumOfCols, By_CorR, Alp_or_Num, StartFromIndex=0):
+        self.C_X = Corner_X
+        self.C_Y = Corner_Y
+        self.Width = Width
+        self.Length = Length
+        self.NumOfRows = NumOfRows
+        self.NumOfCols = NumOfCols
+        self.By_CorR = By_CorR
+        self.Alp_or_Num = Alp_or_Num
+        self.HistogramMatrix = np.zeros((NumOfRows, NumOfCols), dtype=int)
+        self.AnswerString = ""
+        self.StartFromIndex = StartFromIndex
+
+
+_StN = AnswerBlockDetails(28, 49, 501, 464, 25, 25, 'C', 0)              # Student's Name
+_MN = AnswerBlockDetails(547, 236, 213, 182, 10, 10, 'C', 1)             # Mobile Number
+_Class = AnswerBlockDetails(586, 446, 155, 17, 1, 7, 'R', 1, 4)           # Class
+#_Branch = AnswerBlockDetails(82, 634, 649, 29)                           # Branch
+#_BN = AnswerBlockDetails(549, 27, 213, 129)                              # Booklet Number
+#_ScN = AnswerBlockDetails(125, 602, 606, 31)                             # School's Name
+_Section = AnswerBlockDetails(613, 478, 148, 38, 2, 7, 'R', 0)           # Section
+#_FN = AnswerBlockDetails(124, 664, 607, 29)                              # Father's Name
+_A_1t5 = AnswerBlockDetails(64, 720, 85, 80, 5, 4, 'R', 0)               # Answers - 1 to 5
+_A_6t10 = AnswerBlockDetails(188, 722, 80, 80, 5, 4, 'R', 0)             # Answers - 6 to 10
+_A_11t15 = AnswerBlockDetails(309, 721, 79, 81, 5, 4, 'R', 0)            # Answers - 11 to 15
+_A_16t20 = AnswerBlockDetails(429, 721, 79, 81, 5, 4, 'R', 0)            # Answers - 16 to 20
+_A_21t25 = AnswerBlockDetails(549, 721, 80, 81, 5, 4, 'R', 0)            # Answers - 21 to 25
+_A_26t30 = AnswerBlockDetails(671, 722, 81, 80, 5, 4, 'R', 0)            # Answers - 26 to 30
