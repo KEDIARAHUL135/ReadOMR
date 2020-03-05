@@ -1,12 +1,12 @@
 {
     "Student's Name": "RAHUL_KEDIA______________",
     "Mobile Number": "8409250577",
-    "Class": "_",
+    "Class": "10",
     "Section": "C_",
     "Answers 1-5": "ACBDA",
     "Answers 6-10": "D_ABD",
-    "Answers 11-15": "BDACC",
-    "Answers 16-20": "BDAAA",
+    "Answers 11-15": "BDAC_",
+    "Answers 16-20": "BDAAC",
     "Answers 21-25": "DDBCA",
     "Answers 26-30": "BDACC"
 }

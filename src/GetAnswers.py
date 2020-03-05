@@ -195,7 +195,8 @@ class FindAnswer:
 
                 # Uncomment line to form grid on the image.
                 ## {NOTE - comment it again in order to see actual answer}
-                #cv2.rectangle(self.Image, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
+                #cv2.rectangle(self.ThreshImage, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
+                #cv2.imshow("GridThreshImage", self.ThreshImage)
 
                 NumOfWhite, NumOfBlack = self.FindHistogram(i, j, WidthOfGrid, HeightOfGrid)
                 self.HistogramMatrix[HistMatrix_j, HistMatrix_i] = NumOfBlack

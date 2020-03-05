@@ -30,28 +30,30 @@ MaxRadius = 20
 # Threshold Image at this value:
 ThresholdImageAt = 75
 
-# List of alphabets and numbers
-## Last character is '_' for empty answer(Blank space/No answer).
-Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-            'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-            'Y', 'Z', '_']
-Numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_']
+# Expand the total area of OMR Sheet after detecting corners
+EXPAND_INITIAL_POINTS = 1           # 1 for yes and 0 for no
+EXPAND_BY = (0, 0, 0, 7)            # Size in pixel by which to want to expand rectangle
+                                    # (It can be negative also to contract size).
+                                    # First element to expand wrt left edge,
+                                    # Second element to expand wrt top edge,
+                                    # Third element to expand wrt right edge &
+                                    # Last element to expand wrt bottom edge.
 
 
-StN = GA.FindAnswer(28, 49, 501, 464, 25, 25, 'C', 0)               # Student's Name
-MN = GA.FindAnswer(547, 236, 213, 182, 10, 10, 'C', 1)              # Mobile Number
-Class = GA.FindAnswer(586, 446, 155, 17, 1, 7, 'R', 1, 4)           # Class
-# Branch = GA.FindAnswer(82, 634, 649, 29)                           # Branch
-# BN = GA.FindAnswer(549, 27, 213, 129)                              # Booklet Number
-# ScN = GA.FindAnswer(125, 602, 606, 31)                             # School's Name
-Section = GA.FindAnswer(613, 478, 148, 38, 2, 7, 'R', 0)            # Section
-# FN = GA.FindAnswer(124, 664, 607, 29)                              # Father's Name
-A_1t5 = GA.FindAnswer(64, 720, 85, 80, 5, 4, 'R', 0)                # Answers - 1 to 5
-A_6t10 = GA.FindAnswer(188, 722, 80, 80, 5, 4, 'R', 0)              # Answers - 6 to 10
-A_11t15 = GA.FindAnswer(309, 721, 79, 81, 5, 4, 'R', 0)             # Answers - 11 to 15
-A_16t20 = GA.FindAnswer(429, 721, 79, 81, 5, 4, 'R', 0)             # Answers - 16 to 20
-A_21t25 = GA.FindAnswer(549, 721, 80, 81, 5, 4, 'R', 0)             # Answers - 21 to 25
-A_26t30 = GA.FindAnswer(671, 722, 81, 80, 5, 4, 'R', 0)             # Answers - 26 to 30
+StN = GA.FindAnswer(28, 49, 501, 464, 25, 25, 'C', 0)       # Student's Name
+MN = GA.FindAnswer(547, 236, 213, 182, 10, 10, 'C', 1)      # Mobile Number
+Class = GA.FindAnswer(586, 440, 155, 17, 1, 7, 'R', 1, 4)   # Class
+# Branch = GA.FindAnswer(82, 634, 649, 29)                   # Branch
+# BN = GA.FindAnswer(549, 27, 213, 129)                      # Booklet Number
+# ScN = GA.FindAnswer(125, 602, 606, 31)                     # School's Name
+Section = GA.FindAnswer(613, 472, 148, 38, 2, 7, 'R', 0)    # Section
+# FN = GA.FindAnswer(124, 664, 607, 29)                      # Father's Name
+A_1t5 = GA.FindAnswer(64, 710, 85, 90, 5, 4, 'R', 0)        # Answers - 1 to 5
+A_6t10 = GA.FindAnswer(188, 712, 80, 90, 5, 4, 'R', 0)      # Answers - 6 to 10
+A_11t15 = GA.FindAnswer(309, 711, 79, 91, 5, 4, 'R', 0)     # Answers - 11 to 15
+A_16t20 = GA.FindAnswer(429, 711, 79, 91, 5, 4, 'R', 0)     # Answers - 16 to 20
+A_21t25 = GA.FindAnswer(549, 711, 80, 91, 5, 4, 'R', 0)     # Answers - 21 to 25
+A_26t30 = GA.FindAnswer(671, 712, 81, 90, 5, 4, 'R', 0)     # Answers - 26 to 30
 
 
 ################################################################################
@@ -76,3 +78,11 @@ def GetAnswerString(AnswerDict, OMRImage):
     AnswerDict["Answers 26-30"] = A_26t30.CropAnswer_MakeGrid_FindAnswer(OMRImage)
 
     return AnswerDict
+
+
+# List of alphabets and numbers
+## Last character is '_' for empty answer(Blank space/No answer).
+Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+            'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+            'Y', 'Z', '_']
+Numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '_']

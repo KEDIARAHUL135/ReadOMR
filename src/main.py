@@ -86,26 +86,25 @@ def FindCornerCircles(Circles):
 
 
 ################################################################################
-# Function      : PrintImages
-# Parameter     : CornerCircles - It stores information of the corner
-#                                 circles detected.
-#                 PrintCC - It is a flag for printing Corner Circles
-#                 AnsImages - It is a object of class Answers passed
-#                             to this function
-# Description   : This function prints the images as required.
-# Return        : -
+# Function      : ExpandInitialPoints
+# Parameter     : InitialPoints - It contains the initial coordinates of
+#                                 four corner circles in clockwise order
+#                                 starting from top left.
+# Description   : This function corrects the value of InitialPoints parameter
+#                 if and as required to expand the image after corner detection
+#                 for cropping.
+# Return        : InitialPoints
 ################################################################################
-def PrintImages(CornerCircles=None, PrintCC=None):
-    # Printing corner circles
-    if PrintCC is not None:
-        for i in CornerCircles[0, :]:
-            # draw the outer circle
-            cv2.circle(InputImage, (i[0], i[1]), i[2], (0, 255, 0), 2)
-            # draw the center of the circle
-            cv2.circle(InputImage, (i[0], i[1]), 2, (0, 0, 255), 3)
+def ExpandInitialPoints(InitialPoints):
+    for k in range(4):
+        if (k//2) == 0:
+            InitialPoints[k % 4][k % 2] -= M.EXPAND_BY[k]
+            InitialPoints[(k - 1) % 4][k % 2] -= M.EXPAND_BY[k]
+        else:
+            InitialPoints[k % 4][k % 2] += M.EXPAND_BY[k]
+            InitialPoints[(k - 1) % 4][k % 2] += M.EXPAND_BY[k]
 
-        cv2.imshow('Detected Corner Circles', InputImage)
-
+    return InitialPoints
 
 ################################################################################
 # Function      : ProjectiveTransform
@@ -151,6 +150,9 @@ def ProjectiveTransform(CornerCircles):
             else:
                 InitialPoints[2][0] = i[0]
                 InitialPoints[2][1] = i[1]
+
+    if M.EXPAND_INITIAL_POINTS == 1:
+        ExpandInitialPoints(InitialPoints)
 
     # Final coordinates of 4 corner circles in another image
     FinalPoints = np.float32([[0., 0.], [(M.Size - 1), 0.],
@@ -223,20 +225,16 @@ def CropOMR_FindAnswers():
     ## Filter circles according to their position. We are interested in corner circles only
     CornerCircles = FindCornerCircles(Circles)
 
-    ## Print corner circles
-    PrintImages(CornerCircles, True)  # Uncomment to print corner circles
-
     # Applying Projective transformation.
     CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
 
     # Extract different answers
     AnswerDict = ExtractAnswers(CroppedOMRSheetImage)
 
+    print(AnswerDict)
+
     StoreInJSON(AnswerDict)
 
 
 # Crop the required OMR sheet for answer detection
 CropOMR_FindAnswers()
-
-cv2.waitKey(0)
-cv2.destroyAllWindows()
