@@ -11,7 +11,6 @@ import numpy as np
 import src.macros as M
 import json
 
-
 # Read Input and resize it
 InputImage = cv2.imread(M.InputImagePath)
 NewSize = (M.Size, M.Size)
@@ -53,7 +52,7 @@ def HoughCircleDetection():
 #                 CornerCircles - It stores information of the corner
 #                                 circles detected.
 #                 FinalCornerCircles - It is a dummy variable used to add
-#                           a dimention in CornerCircles to make it similar
+#                           a dimension in CornerCircles to make it similar
 #                           to the output circles array from HoughCircles algo.
 # Description   : This function finds corner circles from the array of all
 #                 the circles found by HoughCircleDetection.
@@ -96,9 +95,9 @@ def FindCornerCircles(Circles):
 # Description   : This function prints the images as required.
 # Return        : -
 ################################################################################
-def PrintImages(CornerCircles = None, PrintCC = None, AnsImages = None):
+def PrintImages(CornerCircles=None, PrintCC=None):
     # Printing corner circles
-    if PrintCC != None:
+    if PrintCC is not None:
         for i in CornerCircles[0, :]:
             # draw the outer circle
             cv2.circle(InputImage, (i[0], i[1]), i[2], (0, 255, 0), 2)
@@ -127,7 +126,6 @@ def PrintImages(CornerCircles = None, PrintCC = None, AnsImages = None):
 # Return        : OutputImage
 ################################################################################
 def ProjectiveTransform(CornerCircles):
-
     # Finding initial coordinates of 4 corner circles
     InitialPoints = np.zeros((4, 2), np.float32)
 
@@ -155,8 +153,9 @@ def ProjectiveTransform(CornerCircles):
                 InitialPoints[2][1] = i[1]
 
     # Final coordinates of 4 corner circles in another image
-    FinalPoints = np.float32([[0., 0.], [(M.Size - 1), 0.],\
-                              [(M.Size - 1), (M.Size - 1)], [0., (M.Size - 1)]])
+    FinalPoints = np.float32([[0., 0.], [(M.Size - 1), 0.],
+                              [(M.Size - 1), (M.Size - 1)],
+                              [0., (M.Size - 1)]])
 
     # Applying projective transform
     ProjectiveMatrix = cv2.getPerspectiveTransform(InitialPoints, FinalPoints)
@@ -167,7 +166,7 @@ def ProjectiveTransform(CornerCircles):
 
 ################################################################################
 # Function      : ExtractAnswers
-# Parameter     : AnswerDict - It is the answer dictonary for each question.
+# Parameter     : AnswerDict - It is the answer dictionary for each question.
 #                 AnsImages - It is the object of class Answers containing
 #                             cropped images of answers for each question.
 #                 {Rest all the parameters have their usual meanings as
@@ -175,7 +174,7 @@ def ProjectiveTransform(CornerCircles):
 #                 for different question.}
 # Description   : This function initialises objects for different questions
 #                 and then calls suitable method to fnd answer and then
-#                 stores the answers in a dictonary.
+#                 stores the answers in a dictionary.
 # Return        : AnswerDict
 ################################################################################
 def ExtractAnswers(OMRImage):
@@ -188,7 +187,7 @@ def ExtractAnswers(OMRImage):
 
 ################################################################################
 # Function      : StoreInJSON
-# Parameter     : AnswerDict - It is the answer dictonary for each question.
+# Parameter     : AnswerDict - It is the answer dictionary for each question.
 # Description   : This function stores the answers in a json file named
 #                 "Answers.txt"
 # Return        : -
@@ -210,7 +209,7 @@ def StoreInJSON(AnswerDict):
 #                                        It is cropped in rectangle with the
 #                                        help of four printed corner circles
 #                                        of the OMR Sheet.
-#                 AnswerDict - It is the answer dictonary for each question.
+#                 AnswerDict - It is the answer dictionary for each question.
 # Description   : This function calls suitable functions one by one for
 #                 detecting circles, and the rearranging/resizing the OMR
 #                 sheet and then the answers and found for each question.
@@ -225,7 +224,7 @@ def CropOMR_FindAnswers():
     CornerCircles = FindCornerCircles(Circles)
 
     ## Print corner circles
-    PrintImages(CornerCircles, True)      # Uncomment to print corner circles
+    PrintImages(CornerCircles, True)  # Uncomment to print corner circles
 
     # Applying Projective transformation.
     CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
@@ -238,7 +237,6 @@ def CropOMR_FindAnswers():
 
 # Crop the required OMR sheet for answer detection
 CropOMR_FindAnswers()
-
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

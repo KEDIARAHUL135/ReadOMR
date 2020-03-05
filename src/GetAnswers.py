@@ -1,9 +1,44 @@
+###############################################################################
+# File          : GetAnswers.py
+# Created by    : Rahul Kedia
+# Created on    : 05/03/2020
+# Project       : ReadOMR
+# Description   : This file contains the class of source code responsible to
+#                 find the answer to a particular question.
+################################################################################
 import numpy as np
 import cv2
 import src.macros as M
 
 
 class FindAnswer:
+    ################################################################################
+    # Method        : __init__
+    # Parameter     : C_X, C_Y - It stores the coordinate of top left
+    #                            corner of the answer area(rectangle).
+    #                 Width, Length - It stores the coordinate of top left
+    #                                 corner of the answer area(rectangle).
+    #                 NumOfRows - It stores the number of rows present in OMR
+    #                             for that question.
+    #                 NumOfCols - It stores the number of cols present in OMR
+    #                             for that question.
+    #                 By_Cor_R - It tells that the answer is present in row wise
+    #                            fashion or by column wise. {Row is horizontal
+    #                            lines and Column is vertical line}.
+    #                            Its value - For Row wise - 'R'
+    #                                        For column wise - 'C'.
+    #                 Alp_or_Num - It tells that answer is in alphabets or numbers.
+    #                              0 for Alphabet and 1 for number.
+    #                 HistogramMatrix - It stores the number of Black/White pixel
+    #                                   in each grid in a 2D array. Each element
+    #                                   corresponds to the grid at same place in
+    #                                   the image.
+    #                 AnswerString - It holds the answer to the question.
+    #                 StartFromIndex - It tells if the options are starting
+    #                                  from A/0 or any other alphabet/number.
+    # Description   : This method initialises different parameters for the question.
+    # Return        : -
+    ################################################################################
     def __init__(self, Corner_X, Corner_Y, Width, Length, NumOfRows, NumOfCols, By_CorR, Alp_or_Num, StartFromIndex=0):
         self.C_X = Corner_X
         self.C_Y = Corner_Y
@@ -17,6 +52,13 @@ class FindAnswer:
         self.AnswerString = ""
         self.StartFromIndex = StartFromIndex
 
+    ################################################################################
+    # Method        : AnswerImage
+    # Parameter     : OMRImage - It holds the OMR sheet image after cropping it
+    #                            from corner circles.
+    # Description   : This method answer area from the OMR image
+    # Return        : -
+    ################################################################################
     def AnswerImage(self, OMRImage):
         self.Image = OMRImage[self.C_Y:self.C_Y + self.Length, self.C_X:self.C_X + self.Width]
 
@@ -122,7 +164,7 @@ class FindAnswer:
     #                                              iterate over HistogramMatrix.
     # Description   : This method finds element with maximum value in each row/col
     #                 and according to that appends the final answer string.
-    # Return        : -
+    # Return        : AnswerString
     ################################################################################
     def CropAnswer_MakeGrid_FindAnswer(self, OMRImage):
         self.AnswerImage(OMRImage)
@@ -140,14 +182,14 @@ class FindAnswer:
 
         for i in range(0, Width, WidthOfGrid):
             WidthPixelSkipped += RemainderOfWidth
-            while (WidthPixelSkipped >= 1):
+            while WidthPixelSkipped >= 1:
                 WidthPixelSkipped -= 1
                 i += 1
 
             HistMatrix_j = 0
             for j in range(0, Height, HeightOfGrid):
                 HeightPixelSkipped += RemainderOfHeight
-                while (HeightPixelSkipped >= 1):
+                while HeightPixelSkipped >= 1:
                     HeightPixelSkipped -= 1
                     j += 1
 
