@@ -12,6 +12,7 @@
 
 import numpy as np
 import cv2
+from matplotlib import pyplot as plt
 
 
 # Read and resize Input OMR Image
@@ -42,8 +43,104 @@ def MaskImage(Image):
 
     return MaskedImage
 
+################################################################################
+# Function      : TemplateMatching
+# Parameter     : MaskedImage - It contains the Masked Image.
+#                 TemplateImage - It contains template image of horizontal
+#                                 rectangles to be found.
+#                 OMRImage - It contains input OMR Image.
+#                 RectCoordinates - It contains the coordinates of top left
+#                                   corner and bottom right corner of the
+#                                   rectangles as a list of list.
+#                 {Rest all the parameters ate copied from the link given
+#                 and are self explanatory.}
+# Description   : This function matches the template image o the masked Image
+#                 to find the horizontal rectangles and returns the list of
+#                 rectangles detected.
+# Return        : RectCoordinates
+################################################################################
+def TemplateMatching(MaskedImage, TemplateImage, OMRImage):
+    RectCoordinates = []
+
+    # Code copied from -
+    # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html
+
+    if (len(MaskedImage.shape)) == 3:
+        img_gray = cv2.cvtColor(MaskedImage, cv2.COLOR_BGR2GRAY)
+    else:
+        img_gray = MaskedImage
+
+    if len(TemplateImage.shape) == 3:
+        template = cv2.cvtColor(TemplateImage, cv2.COLOR_BGR2GRAY)
+    else:
+        template = TemplateImage
+
+
+    w, h = template.shape[::-1]
+
+    res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
+    threshold = 0.8
+    loc = np.where( res >= threshold)
+    for pt in zip(*loc[::-1]):
+        RectCoordinates.append([pt[0], pt[1], (pt[0] + w), (pt[1] + h)])
+        #cv2.rectangle(OMRImage, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+
+    return RectCoordinates
+
+
+################################################################################
+# Function      : FilterRectCoordinates
+# Parameter     : RectCoordinates - It contains the coordinates of top left
+#                                   corner and bottom right corner of the
+#                                   rectangles as a list of list.
+#                 DeleteElementIndex - It contains the elements of RectCoordinates
+#                                      which needs to be deleted.
+# Description   : This function finds the coordinates of almost same rectangle
+#                 in the list RectCoordinates and if found same which some
+#                 threshold, it stores those elements in a list and then finally
+#                 deletes them one by one from the last.
+# Return        : RectCoordinates
+################################################################################
+def FilterRectCoordinates(RectCoordinates):
+    DeleteElementIndex = []
+
+    for i in range(1, len(RectCoordinates)):
+        # Sum1 & Sum2 contain the sum of all the elements of both the coordinates
+        # of a consecutive rectangles.
+        Sum1 = 0
+        Sum2 = 0
+        for j in RectCoordinates[i-1]:
+            Sum1 = Sum1 + j
+        for j in RectCoordinates[i]:
+            Sum2 = Sum2 + j
+
+        Difference = Sum1 - Sum2
+
+        # Rectangles are considered same if Difference is between -5 to +5.
+        # This threshold is to be modified
+        if -5 <= Difference <= 5:
+            DeleteElementIndex.append(i-1)
+
+    # List is reversed so that while deleting elements, they are deleted from last.
+    DeleteElementIndex.reverse()
+
+    # Deleting elements
+    for i in DeleteElementIndex:
+        del RectCoordinates[i]
+
+    return RectCoordinates
+
+
 
 MaskedImage = MaskImage(Image)
+
+# Finds the template image. This needs to be changed at last.
+TempImage = MaskedImage[36:44, 15:32]
+cv2.imshow("TempImage", TempImage)
+
+RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
+
+FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
