@@ -13,7 +13,7 @@
 import src.GetAnswers as GA
 
 # Input Image Path
-InputImagePath = "InputImages/Filled1.1.jpeg"
+InputImagePath = "InputImages/OMR1/Filled1.jpeg"
 
 # Size of OMR Sheet - square of length -> Size
 Size = 800  # DONOT CHANGE THIS
