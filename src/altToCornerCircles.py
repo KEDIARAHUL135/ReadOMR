@@ -118,7 +118,7 @@ def FilterRectCoordinates(RectCoordinates):
 
         # Rectangles are considered same if Difference is between -5 to +5.
         # This threshold is to be modified
-        if -5 <= Difference <= 5:
+        if -10 <= Difference <= 10:
             DeleteElementIndex.append(i-1)
 
     # List is reversed so that while deleting elements, they are deleted from last.
@@ -131,7 +131,59 @@ def FilterRectCoordinates(RectCoordinates):
     return RectCoordinates
 
 
+################################################################################
+# Function      : FindGuidingBoxes
+# Parameter     : RectCoordinates - It contains the coordinates of top left
+#                                   corner and bottom right corner of the
+#                                   rectangles as a list of list.
+#                 GuidingBoxes - It contains coordinates of top left
+#                                corner and bottom right corner of the four
+#                                corner rectangles as a list of list in the
+#                                clockwise fashion starting from top left
+#                                rectangle.
+# Description   : This function finds the 4 corner rectangle coordinates from
+#                 RectCoordinates list.
+# Return        : GuidingBoxes
+################################################################################
+def FindGuidingBoxes(RectCoordinates):
+    # Sorting wrt y coordinate of top left corner so that top values are for rectangles
+    # at the top and last values depict value for rectangles at the bottom.
+    sorted(RectCoordinates, key=lambda l:l[1])
 
+    # In this loop it is made sure that first 2 values are for top 2 rectangles
+    # (left and right) and last 2 values are for bottom 2 rectangles(left and right).
+    while 1:
+        # For first 2 values
+        if -10 <= (RectCoordinates[0][0] - RectCoordinates[1][0]) <= 10:
+            del RectCoordinates[1]
+        # For last 2 values
+        elif -10 <= (RectCoordinates[-1][0] - RectCoordinates[-2][0]) <= 10:
+            del RectCoordinates[-2]
+        # Break if done
+        else:
+            break
+
+    # GuidingBoxes value is set by filtering rectangles in a cyclic
+    # order starting from top left rectangle.
+    if RectCoordinates[0][0] < RectCoordinates[1][0]:
+        if RectCoordinates[-1][0] < RectCoordinates[-2][0]:
+            GuidingBoxes = [RectCoordinates[0], RectCoordinates[1],
+                            RectCoordinates[-2], RectCoordinates[-1]]
+        else:
+            GuidingBoxes = [RectCoordinates[0], RectCoordinates[1],
+                            RectCoordinates[-1], RectCoordinates[-2]]
+    else:
+        if RectCoordinates[-1][0] < RectCoordinates[-2][0]:
+            GuidingBoxes = [RectCoordinates[1], RectCoordinates[0],
+                            RectCoordinates[-2], RectCoordinates[-1]]
+        else:
+            GuidingBoxes = [RectCoordinates[1], RectCoordinates[0],
+                            RectCoordinates[-1], RectCoordinates[-2]]
+
+    return GuidingBoxes
+
+
+#=======================================================================================
 MaskedImage = MaskImage(Image)
 
 # Finds the template image. This needs to be changed at last.
@@ -141,6 +193,14 @@ cv2.imshow("TempImage", TempImage)
 RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
 
 FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
+
+GuidingBoxes = FindGuidingBoxes(FinalRectCoordinates)
+
+for i in GuidingBoxes:
+    cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 2)
+    print(i)
+
+cv2.imshow("GuidingBoxes", Image)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
