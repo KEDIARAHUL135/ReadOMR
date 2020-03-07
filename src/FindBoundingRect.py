@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 
 
 # Read and resize Input OMR Image
-Image = cv2.imread("InputImages/Blank3.jpeg")
+Image = cv2.imread("InputImages/Blank1.jpg")
 Image = cv2.resize(Image, (int(Image.shape[1]*0.8), int(Image.shape[0]*0.8)))
 cv2.imshow("Input", Image)
 
