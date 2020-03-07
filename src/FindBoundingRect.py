@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 
 
 # Read and resize Input OMR Image
-Image = cv2.imread("InputImages/Blank1.jpg")
+Image = cv2.imread("InputImages/Blank3.jpeg")
 Image = cv2.resize(Image, (int(Image.shape[1]*0.8), int(Image.shape[0]*0.8)))
 cv2.imshow("Input", Image)
 
@@ -225,24 +225,50 @@ MaskedImage = MaskImage(Image)
 # Finds the template image. This needs to be changed at last.
 TempImage = cv2.imread("TemplateImage.png")
 cv2.imshow("TemplateImage", TempImage)
+TemplateSize = TempImage.shape
 
-RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
+for i in range(3):
+    TempImage = cv2.resize(TempImage, (TemplateSize[1]+i, TemplateSize[0]+i))
+    RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
 
-FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
+    FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
 
-GuidingBoxes = FindGuidingBoxes(RectCoordinates)
-print(FinalRectCoordinates)
-for i in FinalRectCoordinates:
-    cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
-    #print(i)
+    #GuidingBoxes = FindGuidingBoxes(RectCoordinates)
 
-GuidingBoxesCenter = CenterOfGuidingBoxes(GuidingBoxes)
+    print(FinalRectCoordinates)
+    for i in FinalRectCoordinates:
+        cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
+        #print(i)
 
-for i in GuidingBoxesCenter:
-    cv2.circle(Image, i, 2, (0, 255, 0), -1)
-    print(i)
+    #GuidingBoxesCenter = CenterOfGuidingBoxes(GuidingBoxes)
 
-cv2.imshow("GuidingCentre", Image)
+    #for i in GuidingBoxesCenter:
+        #cv2.circle(Image, i, 2, (0, 255, 0), -1)
+        #print(i)
 
-cv2.waitKey(0)
+    cv2.imshow("GuidingCentre", Image)
+    cv2.waitKey(0)
+
+for i in range(3):
+    TempImage = cv2.resize(TempImage, (TemplateSize[1] - i, TemplateSize[0] - i))
+    RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
+
+    FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
+
+    # GuidingBoxes = FindGuidingBoxes(RectCoordinates)
+
+    print(FinalRectCoordinates)
+    for i in FinalRectCoordinates:
+        cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
+        # print(i)
+
+    # GuidingBoxesCenter = CenterOfGuidingBoxes(GuidingBoxes)
+
+    # for i in GuidingBoxesCenter:
+        # cv2.circle(Image, i, 2, (0, 255, 0), -1)
+        # print(i)
+
+    cv2.imshow("GuidingCentre", Image)
+
+    cv2.waitKey(0)
 cv2.destroyAllWindows()
