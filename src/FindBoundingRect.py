@@ -1,5 +1,5 @@
 ###############################################################################
-# File          : altToCornerCircles.py
+# File          : FindBoundingRect.py
 # Created by    : Rahul Kedia
 # Created on    : 06/03/2020
 # Project       : ReadOMR
@@ -39,9 +39,11 @@ def MaskImage(Image):
 
     MaskedImage = cv2.inRange(HSVImage, LowerRange, UpperRange)
 
-    cv2.imshow("Masked", MaskedImage)
+    MaskedBlurImage = cv2.GaussianBlur(MaskedImage, (3, 3), 0)
 
-    return MaskedImage
+    cv2.imshow("Masked", MaskedBlurImage)
+
+    return MaskedBlurImage
 
 ################################################################################
 # Function      : TemplateMatching
@@ -128,8 +130,6 @@ def FilterRectCoordinates(RectCoordinates):
     for i in DeleteElementIndex:
         del RectCoordinates[i]
 
-    return RectCoordinates
-
 
 ################################################################################
 # Function      : FindGuidingBoxes
@@ -209,23 +209,23 @@ def CenterOfGuidingBoxes(GuidingBoxes):
 MaskedImage = MaskImage(Image)
 
 # Finds the template image. This needs to be changed at last.
-TempImage = MaskedImage[36:44, 15:32]
-cv2.imshow("TempImage", TempImage)
+TempImage = cv2.imread("TemplateImage.png")
+cv2.imshow("TemplateImage", TempImage)
 
 RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
 
-FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
+FilterRectCoordinates(RectCoordinates)
 
-GuidingBoxes = FindGuidingBoxes(FinalRectCoordinates)
+GuidingBoxes = FindGuidingBoxes(RectCoordinates)
 
-for i in GuidingBoxes:
-    #cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 2)
+for i in RectCoordinates:
+    cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 2)
     print(i)
 
 GuidingBoxesCenter = CenterOfGuidingBoxes(GuidingBoxes)
 
 for i in GuidingBoxesCenter:
-    cv2.circle(Image, i, 2, (0, 0, 255), -1)
+    cv2.circle(Image, i, 2, (0, 255, 0), -1)
     print(i)
 
 cv2.imshow("GuidingCentre", Image)
