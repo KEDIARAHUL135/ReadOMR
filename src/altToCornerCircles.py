@@ -35,7 +35,7 @@ def MaskImage(Image):
     HSVImage = cv2.cvtColor(Image, cv2.COLOR_BGR2HSV)
 
     LowerRange = np.array([0, 0, 0])
-    UpperRange = np.array([0, 0, 130])
+    UpperRange = np.array([255, 255, 100])
 
     MaskedImage = cv2.inRange(HSVImage, LowerRange, UpperRange)
 

@@ -162,7 +162,7 @@ def ProjectiveTransform(CornerCircles):
     # Applying projective transform
     ProjectiveMatrix = cv2.getPerspectiveTransform(InitialPoints, FinalPoints)
     OutputImage = cv2.warpPerspective(InputImage, ProjectiveMatrix, NewSize)
-
+    cv2.imshow("Image", OutputImage)
     return OutputImage
 
 
