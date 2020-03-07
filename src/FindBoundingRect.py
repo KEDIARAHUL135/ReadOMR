@@ -159,7 +159,7 @@ def FilterRectCoordinates(RectCoordinates):
 #                 RectCoordinates list.
 # Return        : GuidingBoxes
 ################################################################################
-def FindGuidingBoxes(RectCoordinates):
+def FindGuidingCornerBoxes(RectCoordinates):
     # Sorting wrt y coordinate of top left corner so that top values are for rectangles
     # at the top and last values depict value for rectangles at the bottom.
     sorted(RectCoordinates, key=lambda l:l[1])
@@ -209,7 +209,7 @@ def FindGuidingBoxes(RectCoordinates):
 # Description   : This function finds the centre of 4 corner rectangle found.
 # Return        : GuidingBoxesCenter
 ################################################################################
-def CenterOfGuidingBoxes(GuidingBoxes):
+def CenterOfBoxes(GuidingBoxes):
     GuidingBoxesCenter = []
 
     for i in GuidingBoxes:
@@ -219,56 +219,74 @@ def CenterOfGuidingBoxes(GuidingBoxes):
     return GuidingBoxesCenter
 
 
-#=======================================================================================
-MaskedImage = MaskImage(Image)
+################################################################################
+# Function      : CenterOfGuidingBoxes
+# Parameter     : FinalRectCoordinates - Final list of rectangles which donot
+#                                        have any intersecting rectangles.
+#                 TemplateImage - It reads the template image of guiding rectangles.
+#                 RectCoordinates - It contains the coordinates of top left
+#                                   corner and bottom right corner of the
+#                                   guiding rectangles as a list of list.
+#                 RetRectCoordinates - Holds return value of FilterRectCoordinates.
+#                 {Rest parameters are self explanatory}
+# Description   : This function finds the coordinates of guiding rectangles.
+#                 It does it by matching different sizes of template image with
+#                 the omr image and then filtering out repeating rectangles.
+# Return        : return value from FilterRectCoordinates
+################################################################################
+def FindGuidingBoxes(MaskedImage):
+    FinalRectCoordinates = []
+    # Reads the template image.
+    TemplateImage = cv2.imread("TemplateImage.png")
+    cv2.imshow("TemplateImage", TemplateImage)
+    TemplateImageSize = TemplateImage.shape
 
-# Finds the template image. This needs to be changed at last.
-TempImage = cv2.imread("TemplateImage.png")
-cv2.imshow("TemplateImage", TempImage)
-TemplateSize = TempImage.shape
+    # For enlarging template image.
+    for i in range(3):
+        TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1]+i, TemplateImageSize[0]+i))
 
-for i in range(3):
-    TempImage = cv2.resize(TempImage, (TemplateSize[1]+i, TemplateSize[0]+i))
-    RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
+        RectCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
+        RetRectCoordinates = FilterRectCoordinates(RectCoordinates)
+        for j in RetRectCoordinates:
+            FinalRectCoordinates.append(j)
 
-    FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
+    # For diminishing template image.
+    for i in range(3):
+        TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] - i, TemplateImageSize[0] - i))
+        RectCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
 
-    #GuidingBoxes = FindGuidingBoxes(RectCoordinates)
+        RetRectCoordinates = FilterRectCoordinates(RectCoordinates)
+        for j in RetRectCoordinates:
+            FinalRectCoordinates.append(j)
 
-    print(FinalRectCoordinates)
+    return FilterRectCoordinates(FinalRectCoordinates)
+
+
+################################################################################
+# Function      : RunCode
+# Parameter     : MaskedImage - Contains the image masked for black colour.
+#                 FinalRectCoordinates - Final list of rectangles which donot
+#                                        have any intersecting rectangles.
+#                 {Rest parameters are self explanatory}
+# Description   : This function calls relevant functions one by one in order
+#                 to run program.
+# Return        : -
+################################################################################
+def RunCode():
+    MaskedImage = MaskImage(Image)
+
+    FinalRectCoordinates = FindGuidingBoxes(MaskedImage)
+    GuidingCornerBoxes = FindGuidingCornerBoxes(FinalRectCoordinates)
+    GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
+
     for i in FinalRectCoordinates:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
-        #print(i)
-
-    #GuidingBoxesCenter = CenterOfGuidingBoxes(GuidingBoxes)
-
-    #for i in GuidingBoxesCenter:
-        #cv2.circle(Image, i, 2, (0, 255, 0), -1)
-        #print(i)
-
-    cv2.imshow("GuidingCentre", Image)
-    cv2.waitKey(0)
-
-for i in range(3):
-    TempImage = cv2.resize(TempImage, (TemplateSize[1] - i, TemplateSize[0] - i))
-    RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
-
-    FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
-
-    # GuidingBoxes = FindGuidingBoxes(RectCoordinates)
-
-    print(FinalRectCoordinates)
-    for i in FinalRectCoordinates:
-        cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
-        # print(i)
-
-    # GuidingBoxesCenter = CenterOfGuidingBoxes(GuidingBoxes)
-
-    # for i in GuidingBoxesCenter:
-        # cv2.circle(Image, i, 2, (0, 255, 0), -1)
-        # print(i)
+    for i in GuidingCornerBoxesCenter:
+        cv2.circle(Image, i, 2, (0, 255, 0), -1)
 
     cv2.imshow("GuidingCentre", Image)
 
-    cv2.waitKey(0)
+
+RunCode()
+cv2.waitKey(0)
 cv2.destroyAllWindows()
