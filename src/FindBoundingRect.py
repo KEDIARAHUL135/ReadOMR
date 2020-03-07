@@ -91,44 +91,58 @@ def TemplateMatching(MaskedImage, TemplateImage, OMRImage):
 
 
 ################################################################################
+# Function      : IntersectingArea
+# Parameter     : {Self explanatory}
+# Description   : This function checks if there is some intersecting area
+#                 between 2 rectangles.
+# Return        : True - If intersecting area is present.
+#                 False - If intersecting area is absent.
+################################################################################
+def IntersectingArea(Rect1, Rect2):
+    Diff_X = min(Rect1[2], Rect2[2]) - max(Rect1[0], Rect2[0])
+    Diff_Y = min(Rect1[3], Rect2[3]) - max(Rect1[1], Rect2[1])
+    if Diff_X >= 0 and Diff_Y >= 0:
+        return True
+    else:
+        return False
+
+
+################################################################################
 # Function      : FilterRectCoordinates
 # Parameter     : RectCoordinates - It contains the coordinates of top left
 #                                   corner and bottom right corner of the
 #                                   rectangles as a list of list.
-#                 DeleteElementIndex - It contains the elements of RectCoordinates
-#                                      which needs to be deleted.
-# Description   : This function finds the coordinates of almost same rectangle
-#                 in the list RectCoordinates and if found same which some
-#                 threshold, it stores those elements in a list and then finally
-#                 deletes them one by one from the last.
-# Return        : RectCoordinates
+#                 LengthOfRectCoordinates - Stores the length of RectCoordinates.
+#                 FoundIntersectingArea - Flag of whether Intersecting area is
+#                                         found or not.
+#                 Rect1, Rect2 - Stores 2 rectangles to be compared.
+#                 FinalRectCoordinates - Final list of rectangles which donot
+#                                        have any intersecting rectangles.
+# Description   : This function finds the intersecting area of 2 rectangles
+#                 from the list RectCoordinates and if no intersecting rectangle
+#                 is found, it stores the rectangle in FinalRectCoordinates.
+# Return        : FinalRectCoordinates
 ################################################################################
 def FilterRectCoordinates(RectCoordinates):
-    DeleteElementIndex = []
+    FinalRectCoordinates = []
 
-    for i in range(1, len(RectCoordinates)):
-        # Sum1 & Sum2 contain the sum of all the elements of both the coordinates
-        # of a consecutive rectangles.
-        Sum1 = 0
-        Sum2 = 0
-        for j in RectCoordinates[i-1]:
-            Sum1 = Sum1 + j
-        for j in RectCoordinates[i]:
-            Sum2 = Sum2 + j
+    LengthOfRectCoordinates = len(RectCoordinates)
 
-        Difference = Sum1 - Sum2
+    for I in range(LengthOfRectCoordinates):
+        FoundIntersectingArea = 0
+        Rect1 = RectCoordinates[I].copy()
 
-        # Rectangles are considered same if Difference is between -5 to +5.
-        # This threshold is to be modified
-        if -10 <= Difference <= 10:
-            DeleteElementIndex.append(i-1)
+        for J in range(I+1, LengthOfRectCoordinates):
+            Rect2 = RectCoordinates[J].copy()
 
-    # List is reversed so that while deleting elements, they are deleted from last.
-    DeleteElementIndex.reverse()
+            if IntersectingArea(Rect1, Rect2) is True:
+                FoundIntersectingArea = 1
+                break
 
-    # Deleting elements
-    for i in DeleteElementIndex:
-        del RectCoordinates[i]
+        if FoundIntersectingArea == 0:
+            FinalRectCoordinates.append(RectCoordinates[I])
+
+    return FinalRectCoordinates
 
 
 ################################################################################
@@ -214,13 +228,13 @@ cv2.imshow("TemplateImage", TempImage)
 
 RectCoordinates = TemplateMatching(MaskedImage, TempImage, Image)
 
-FilterRectCoordinates(RectCoordinates)
+FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
 
 GuidingBoxes = FindGuidingBoxes(RectCoordinates)
-
-for i in RectCoordinates:
-    cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 2)
-    print(i)
+print(FinalRectCoordinates)
+for i in FinalRectCoordinates:
+    cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
+    #print(i)
 
 GuidingBoxesCenter = CenterOfGuidingBoxes(GuidingBoxes)
 
