@@ -183,6 +183,28 @@ def FindGuidingBoxes(RectCoordinates):
     return GuidingBoxes
 
 
+################################################################################
+# Function      : CenterOfGuidingBoxes
+# Parameter     : GuidingBoxesCenter - It contains the coordinates of centre of
+#                                   guiding/corner rectangles found.
+#                 GuidingBoxes - It contains coordinates of top left
+#                                corner and bottom right corner of the four
+#                                corner rectangles as a list of list in the
+#                                clockwise fashion starting from top left
+#                                rectangle.
+# Description   : This function finds the centre of 4 corner rectangle found.
+# Return        : GuidingBoxesCenter
+################################################################################
+def CenterOfGuidingBoxes(GuidingBoxes):
+    GuidingBoxesCenter = []
+
+    for i in GuidingBoxes:
+        Center = ((i[0] + i[2])//2, (i[1] + i[3])//2)
+        GuidingBoxesCenter.append(Center)
+
+    return GuidingBoxesCenter
+
+
 #=======================================================================================
 MaskedImage = MaskImage(Image)
 
@@ -197,10 +219,16 @@ FinalRectCoordinates = FilterRectCoordinates(RectCoordinates)
 GuidingBoxes = FindGuidingBoxes(FinalRectCoordinates)
 
 for i in GuidingBoxes:
-    cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 2)
+    #cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 2)
     print(i)
 
-cv2.imshow("GuidingBoxes", Image)
+GuidingBoxesCenter = CenterOfGuidingBoxes(GuidingBoxes)
+
+for i in GuidingBoxesCenter:
+    cv2.circle(Image, i, 2, (0, 0, 255), -1)
+    print(i)
+
+cv2.imshow("GuidingCentre", Image)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()

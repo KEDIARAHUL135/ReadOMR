@@ -72,6 +72,7 @@ class FindAnswer:
         self.ThreshImage = cv2.cvtColor(self.Image, cv2.COLOR_BGR2GRAY)
         ret, self.ThreshImage = cv2.threshold(self.ThreshImage, M.ThresholdImageAt, 255, cv2.THRESH_BINARY)
 
+
     ################################################################################
     # Method        : FindHistogram
     # Parameter     : (i, j) - This is the top left coordinate of a grid box.

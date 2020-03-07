@@ -238,3 +238,4 @@ def CropOMR_FindAnswers():
 
 # Crop the required OMR sheet for answer detection
 CropOMR_FindAnswers()
+cv2.waitKey(0)
