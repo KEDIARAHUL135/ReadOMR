@@ -12,6 +12,7 @@
 
 import numpy as np
 import cv2
+import os
 
 
 ################################################################################
@@ -217,6 +218,7 @@ def CenterOfBoxes(GuidingBoxes):
 # Function      : FindGuidingBoxes
 # Parameter     : FinalBoxCoordinates - Final list of boxes which donot
 #                                        have any intersecting boxes.
+#                 TemplateImagesFolderPath - Path of template images' folder.
 #                 TemplateImage - It reads the template image of guiding boxes.
 #                 BoxCoordinates - It contains the coordinates of top left
 #                                   corner and bottom right corner of the
@@ -230,32 +232,35 @@ def CenterOfBoxes(GuidingBoxes):
 ################################################################################
 def FindGuidingBoxes(MaskedImage):
     FinalBoxCoordinates = []
-    # Reads the template image.
-    TemplateImage = cv2.imread("TemplateImage.png")
-    cv2.imshow("TemplateImage", TemplateImage)
-    TemplateImageSize = TemplateImage.shape
 
-    # For enlarging template image.
-    for i in range(3):
-        TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] + i, TemplateImageSize[0] + i))
+    TemplateImagesFolderPath = os.path.abspath(os.path.join('TemplateImages'))
 
-        BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
-        RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
-        for j in RetBoxCoordinates:
-            FinalBoxCoordinates.append(j)
+    # Read all template images and run.
+    for ImageName in os.listdir(TemplateImagesFolderPath):
+        print(ImageName)                    # Verifying name of image
+        # Reading in image
+        TemplateImage = cv2.imread(TemplateImagesFolderPath + "/" + ImageName)
 
-    # For diminishing template image.
-    for i in range(3):
-        TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] - i, TemplateImageSize[0] - i))
-        BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
+        TemplateImageSize = TemplateImage.shape
 
-        RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
-        for j in RetBoxCoordinates:
-            FinalBoxCoordinates.append(j)
+        # For enlarging template image.
+        for i in range(3):
+            TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] + i, TemplateImageSize[0] + i))
 
-    for i in FinalBoxCoordinates:
-        cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
-    cv2.imshow("Image", Image)
+            BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
+            RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
+            for j in RetBoxCoordinates:
+                FinalBoxCoordinates.append(j)
+
+        # For diminishing template image.
+        for i in range(3):
+            TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] - i, TemplateImageSize[0] - i))
+            BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
+
+            RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
+            for j in RetBoxCoordinates:
+                FinalBoxCoordinates.append(j)
+
     return FilterBoxCoordinates(FinalBoxCoordinates)
 
 
@@ -353,7 +358,7 @@ def RunCode():
         print("Yes, program working correctly")
     else:
         print("Guiding Boxes not found correctly.")
-    '''
+
     # =====================Just for visualisation, to be deleted==========================
     for i in LeftGuidingBoxes:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
@@ -363,7 +368,7 @@ def RunCode():
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
     # ====================================================================================
     cv2.imshow("GuidingCentre", Image)
-    '''
+
     return LeftGuidingBoxes, RightGuidingBoxes
 
 
