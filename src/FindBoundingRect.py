@@ -12,14 +12,6 @@
 
 import numpy as np
 import cv2
-from matplotlib import pyplot as plt
-import time
-
-t1 = time.time()
-# Read and resize Input OMR Image
-Image = cv2.imread("InputImages/Blank2.jpeg")
-Image = cv2.resize(Image, (int(Image.shape[1] * 0.8), int(Image.shape[0] * 0.8)))
-cv2.imshow("Input", Image)
 
 
 ################################################################################
@@ -29,10 +21,11 @@ cv2.imshow("Input", Image)
 #                 LowerRange, UpperRange - They mention the range used to
 #                         extract horizontal block near the edges(Black colour).
 #                 MaskedImage - It contains the Masked Image.
+#                 MaskedBlurImage - Blur of Masked Image.
 # Description   : This function masks the input OMR image for black colour.
-# Return        : MaskedImage
+# Return        : MaskedBlurImage
 ################################################################################
-def MaskImage(Image):
+def MaskImage():
     HSVImage = cv2.cvtColor(Image, cv2.COLOR_BGR2HSV)
 
     LowerRange = np.array([0, 0, 0])
@@ -58,7 +51,7 @@ def MaskImage(Image):
 #                                   boxes as a list of list.
 #                 {Rest all the parameters ate copied from the link given
 #                 and are self explanatory.}
-# Description   : This function matches the template image o the masked Image
+# Description   : This function matches the template image of the masked Image
 #                 to find the horizontal boxes and returns the list of
 #                 boxes detected.
 # Return        : BoxCoordinates
@@ -67,7 +60,8 @@ def TemplateMatching(MaskedImage, TemplateImage, OMRImage):
     BoxCoordinates = []
 
     # Code copied from -
-    # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html
+    # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/
+    #                                   py_template_matching/py_template_matching.html
 
     if (len(MaskedImage.shape)) == 3:
         img_gray = cv2.cvtColor(MaskedImage, cv2.COLOR_BGR2GRAY)
@@ -86,7 +80,7 @@ def TemplateMatching(MaskedImage, TemplateImage, OMRImage):
     loc = np.where(res >= threshold)
     for pt in zip(*loc[::-1]):
         BoxCoordinates.append([pt[0], pt[1], (pt[0] + w), (pt[1] + h)])
-        # cv2.rectangle(OMRImage, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+        #cv2.rectangle(OMRImage, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
 
     return BoxCoordinates
 
@@ -147,18 +141,17 @@ def FilterBoxCoordinates(BoxCoordinates):
 
 
 ################################################################################
-# Function      : FindGuidingBoxes
+# Function      : FindGuidingCornerBoxes
 # Parameter     : BoxCoordinates - It contains the coordinates of top left
-#                                   corner and bottom right corner of the
-#                                   Boxes as a list of list.
-#                 GuidingBoxes - It contains coordinates of top left
+#                                  corner and bottom right corner of the
+#                                  Boxes as a list of list.
+#                 GuidingCornerBoxes - It contains coordinates of top left
 #                                corner and bottom right corner of the four
-#                                corner boxes as a list of list in the
-#                                clockwise fashion starting from top left
-#                                box.
-# Description   : This function finds the 4 corner box coordinates from
+#                                corner boxes as a list of list in the clockwise
+#                                fashion starting from top left box.
+# Description   : This function finds the 4 guiding corner box coordinates from
 #                 BoxCoordinates list.
-# Return        : GuidingBoxes
+# Return        : GuidingCornerBoxes
 ################################################################################
 def FindGuidingCornerBoxes(BoxCoordinates):
     # Sorting wrt y coordinate of top left corner so that top values are for Boxes
@@ -182,24 +175,24 @@ def FindGuidingCornerBoxes(BoxCoordinates):
     # order starting from top left box.
     if BoxCoordinates[0][0] < BoxCoordinates[1][0]:
         if BoxCoordinates[-1][0] < BoxCoordinates[-2][0]:
-            GuidingBoxes = [BoxCoordinates[0], BoxCoordinates[1],
-                            BoxCoordinates[-2], BoxCoordinates[-1]]
+            GuidingCornerBoxes = [BoxCoordinates[0], BoxCoordinates[1],
+                                  BoxCoordinates[-2], BoxCoordinates[-1]]
         else:
-            GuidingBoxes = [BoxCoordinates[0], BoxCoordinates[1],
-                            BoxCoordinates[-1], BoxCoordinates[-2]]
+            GuidingCornerBoxes = [BoxCoordinates[0], BoxCoordinates[1],
+                                  BoxCoordinates[-1], BoxCoordinates[-2]]
     else:
         if BoxCoordinates[-1][0] < BoxCoordinates[-2][0]:
-            GuidingBoxes = [BoxCoordinates[1], BoxCoordinates[0],
-                            BoxCoordinates[-2], BoxCoordinates[-1]]
+            GuidingCornerBoxes = [BoxCoordinates[1], BoxCoordinates[0],
+                                  BoxCoordinates[-2], BoxCoordinates[-1]]
         else:
-            GuidingBoxes = [BoxCoordinates[1], BoxCoordinates[0],
-                            BoxCoordinates[-1], BoxCoordinates[-2]]
+            GuidingCornerBoxes = [BoxCoordinates[1], BoxCoordinates[0],
+                                  BoxCoordinates[-1], BoxCoordinates[-2]]
 
-    return GuidingBoxes
+    return GuidingCornerBoxes
 
 
 ################################################################################
-# Function      : CenterOfGuidingBoxes
+# Function      : CenterOfBoxes
 # Parameter     : GuidingBoxesCenter - It contains the coordinates of centre of
 #                                   guiding/corner boxes found.
 #                 GuidingBoxes - It contains coordinates of top left
@@ -221,7 +214,7 @@ def CenterOfBoxes(GuidingBoxes):
 
 
 ################################################################################
-# Function      : CenterOfGuidingBoxes
+# Function      : FindGuidingBoxes
 # Parameter     : FinalBoxCoordinates - Final list of boxes which donot
 #                                        have any intersecting boxes.
 #                 TemplateImage - It reads the template image of guiding boxes.
@@ -260,6 +253,9 @@ def FindGuidingBoxes(MaskedImage):
         for j in RetBoxCoordinates:
             FinalBoxCoordinates.append(j)
 
+    for i in FinalBoxCoordinates:
+        cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
+    cv2.imshow("Image", Image)
     return FilterBoxCoordinates(FinalBoxCoordinates)
 
 
@@ -337,27 +333,27 @@ def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxe
 ################################################################################
 # Function      : RunCode
 # Parameter     : MaskedImage - Contains the image masked for black colour.
-#                 FinalBoxCoordinates - Final list of rectangles which donot
-#                                        have any intersecting rectangles.
+#                 BoxCoordinates - Final list of boxes which donot have any
+#                         intersecting boxes(These are not actual guiding boxes).
 #                 {Rest parameters are self explanatory}
 # Description   : This function calls relevant functions one by one in order
 #                 to run program.
-# Return        : -
+# Return        : LeftGuidingBoxes, RightGuidingBoxes
 ################################################################################
 def RunCode():
-    MaskedImage = MaskImage(Image)
+    MaskedImage = MaskImage()
 
-    FinalBoxCoordinates = FindGuidingBoxes(MaskedImage)
-    GuidingCornerBoxes = FindGuidingCornerBoxes(FinalBoxCoordinates)
+    BoxCoordinates = FindGuidingBoxes(MaskedImage)
+    GuidingCornerBoxes = FindGuidingCornerBoxes(BoxCoordinates)
     GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
-    LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(FinalBoxCoordinates,
-                                                                   Image.shape[1] // 2, GuidingCornerBoxesCenter)
+    LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(BoxCoordinates, Image.shape[1] // 2,
+                                                                   GuidingCornerBoxesCenter)
 
     if len(LeftGuidingBoxes) == len(RightGuidingBoxes):
         print("Yes, program working correctly")
     else:
         print("Guiding Boxes not found correctly.")
-
+    '''
     # =====================Just for visualisation, to be deleted==========================
     for i in LeftGuidingBoxes:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
@@ -367,10 +363,43 @@ def RunCode():
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
     # ====================================================================================
     cv2.imshow("GuidingCentre", Image)
+    '''
+    return LeftGuidingBoxes, RightGuidingBoxes
 
 
-RunCode()
-t2 = time.time()
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-print(t2 - t1)
+################################################################################
+# Function      : FindBoundingBoxes
+# Parameter     : Image - Reads the input image of omr sheet.
+#                 InputImagePath - Path from which input image is to be read.
+#                 ResizeInputImageTo - Resize input image to this size.
+#                 {Rest parameters are self explanatory}
+# Description   : This function read the input omr image and calls RunCode to
+#                 ultimately find the guiding boxes of left side and right side.
+# Return        : LeftGuidingBoxes, RightGuidingBoxes
+################################################################################
+def FindBoundingBoxes(InputImagePath=None, ResizeInputImageTo=None):
+    global Image
+
+    # Read and resize Input OMR Image
+    if InputImagePath == None:
+        Image = cv2.imread("InputImages/OMR1/Blank.jpeg")
+    else:
+        Image = cv2.imread(InputImagePath)
+
+    if ResizeInputImageTo == None:
+        Image = cv2.resize(Image, (600, 800))       # Default Value is set to (600, 800).
+    else:
+        Image = cv2.resize(Image, ResizeInputImageTo)
+
+    cv2.imshow("Input", Image)
+    print(Image.shape)
+    LeftGuidingBoxes, RightGuidingBoxes = RunCode()
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    return LeftGuidingBoxes, RightGuidingBoxes
+
+
+# Call this function(FindBoundingBoxes) to run code present in this file with suitable parameters.
+FindBoundingBoxes()
