@@ -142,52 +142,182 @@ def FilterBoxCoordinates(BoxCoordinates):
 
 
 ################################################################################
+# Class         : CornerTag
+# Parameter     : Name - Name of corner
+#                 StartX, StartY - x&y coordinates of the corner.
+#                 IncX, IncY - The value by which x&y will be incremented in
+#                              order to expand the square from corner.
+#                              It can be negative also.
+#                 CheckX, CheckY - Holds those element number of the box which
+#                       will tell that if the box may collide to expanding
+#                       square, the which x or y coordinate of box may get
+#                       equal to x or y coordinate respectively of the corner
+#                       of expanding box.
+# Description   : Holds the info about a corner to make code simpler.
+# Return        : -
+################################################################################
+class CornerTag:
+    def __init__(self, Name, StartX, StartY, IncX, IncY, CheckX, CheckY):
+        self.Name = Name
+        self.StartX = StartX
+        self.StartY = StartY
+        self.IncX = IncX
+        self.IncY = IncY
+        self.CheckX = CheckX
+        self.CheckY = CheckY
+
+
+################################################################################
+# Function      : CheckIfCornerBox
+# Parameter     : BoxCoordinates - It contains the coordinates of top left
+#                                  corner and bottom right corner of the
+#                                  boxes as a list of list.
+#                 BoxToCheck - Holds coordinates of the box for which we have
+#                           to confirm whether it is a guiding corner box or not.
+#                 X - x coordinate of the centre of BoxToCheck.
+#                 Count - Keeps a count of number of boxes which lie in the
+#                         straight line with the BoxToCheck.
+# Description   : This function confirms whether the BoxToCheck is the guiding
+#                 corner boxes or not. It does it by seeing that number of
+#                 guiding boxes in the verticle line of BoxToCheck is greater
+#                 than a particular threshold or not.
+#                 {This might give false output also if the image is not straight}
+# Return        : True - If it is a guiding corner box
+#                 False - If it is not a guiding corner box
+################################################################################
+def CheckIfCornerBox(BoxToCheck, BoxCoordinates):
+    Count = 0
+    X = (BoxToCheck[0] + BoxToCheck[2])/2
+
+    for Box in BoxCoordinates:
+        if Box[0] <= X <= Box[2]:
+            Count += 1
+
+    if Count >= 10:     # Threshold Value
+        return True
+    else:
+        return False
+
+
+################################################################################
+# Function      : FindCornerBox
+# Parameter     : BoxCoordinates - It contains the coordinates of top left
+#                                  corner and bottom right corner of the
+#                                  boxes as a list of list.
+#                 Corner - This is object of class CornerTag passed. Will find
+#                          corner guiding box nearest to this corner.
+#                 IterateTill - Holds the shorter side length value of image so
+#                               that loop does not exceed the image.
+#                 X, Y - x&y coordinate of the corner nearer to which guiding
+#                        corner is being found.
+#                 NumOfIterations - Keeps a count of number of iterations.
+#                 FoundCorner - Flag for if corner is found or not.
+#                 CornerBoxFound - Holds coordinates of the corner box found.
+# Description   : This function finds the tentative guiding corner box of the OMR
+#                 nearer to the corner asked and then confirms if by calling
+#                 CheckIfCornerBox.
+#                 {This might give false output also if the image is not straight}
+# Return        : CornerBoxFound
+################################################################################
+def FindCornerBox(BoxCoordinates, Corner, IterateTill):
+    X = Corner.StartX
+    Y = Corner.StartY
+    NumOfIterations = 0
+    FoundCorner = 0
+
+    while NumOfIterations < IterateTill:
+        for Box in BoxCoordinates:
+            if Corner.Name == "TL":                                           # For top left corner
+                if X == Box[Corner.CheckX] and Y >= Box[Corner.CheckX + 1]:
+                    if CheckIfCornerBox(Box, BoxCoordinates):
+                        CornerBoxFound = Box
+                        FoundCorner = 1
+                        break
+                elif Y == Box[Corner.CheckY] and X >= Box[Corner.CheckY - 1]:
+                    if CheckIfCornerBox(Box, BoxCoordinates):
+                        CornerBoxFound = Box
+                        FoundCorner = 1
+                        break
+
+            elif Corner.Name == "TR":                                         # For top right corner
+                if X == Box[Corner.CheckX] and Y >= Box[Corner.CheckX + 1]:
+                    if CheckIfCornerBox(Box, BoxCoordinates):
+                        CornerBoxFound = Box
+                        FoundCorner = 1
+                        break
+                elif Y == Box[Corner.CheckY] and X <= Box[Corner.CheckY - 1]:
+                    if CheckIfCornerBox(Box, BoxCoordinates):
+                        CornerBoxFound = Box
+                        FoundCorner = 1
+                        break
+
+            elif Corner.Name == "BR":                                         # For bottom right corner
+                if X == Box[Corner.CheckX] and Y <= Box[Corner.CheckX + 1]:
+                    if CheckIfCornerBox(Box, BoxCoordinates):
+                        CornerBoxFound = Box
+                        FoundCorner = 1
+                        break
+                elif Y == Box[Corner.CheckY] and X <= Box[Corner.CheckY - 1]:
+                    if CheckIfCornerBox(Box, BoxCoordinates):
+                        CornerBoxFound = Box
+                        FoundCorner = 1
+                        break
+
+            elif Corner.Name == "BL":                                         # For bottom left corner
+                if X == Box[Corner.CheckX] and Y <= Box[Corner.CheckX + 1]:
+                    if CheckIfCornerBox(Box, BoxCoordinates):
+                        CornerBoxFound = Box
+                        FoundCorner = 1
+                        break
+                elif Y == Box[Corner.CheckY] and X >= Box[Corner.CheckY - 1]:
+                    if CheckIfCornerBox(Box, BoxCoordinates):
+                        CornerBoxFound = Box
+                        FoundCorner = 1
+                        break
+
+        if FoundCorner:
+            break
+
+        X += Corner.IncX
+        Y += Corner.IncY
+        NumOfIterations += 1
+
+    if FoundCorner:
+        return CornerBoxFound
+    else:
+        print("Corner not found for - " + Corner.Name)
+        return CornerBoxFound
+
+
+################################################################################
 # Function      : FindGuidingCornerBoxes
 # Parameter     : BoxCoordinates - It contains the coordinates of top left
 #                                  corner and bottom right corner of the
-#                                  Boxes as a list of list.
-#                 GuidingCornerBoxes - It contains coordinates of top left
-#                                corner and bottom right corner of the four
-#                                corner boxes as a list of list in the clockwise
-#                                fashion starting from top left box.
-# Description   : This function finds the 4 guiding corner box coordinates from
-#                 BoxCoordinates list.
+#                                  boxes as a list of list.
+#                 ImageShape - Holds shape of omr image.
+#                 GuidingCornerBoxes - Hold coordinates of the guiding corner boxes.
+#                 TL/TR/BR/BL CornerTag - These are objects of class CornerTag.
+# Description   : This function finds the guiding corner boxes of the OMR.
+#                 {This might give false output also if the image is not straight}
 # Return        : GuidingCornerBoxes
 ################################################################################
-def FindGuidingCornerBoxes(BoxCoordinates):
-    # Sorting wrt y coordinate of top left corner so that top values are for Boxes
-    # at the top and last values depict value for boxes at the bottom.
-    BoxCoordinates = sorted(BoxCoordinates, key=lambda l: l[1])
+def FindGuidingCornerBoxes(BoxCoordinates, ImageShape):
+    GuidingCornerBoxes = []
 
-    # In this loop it is made sure that first 2 values are for top 2 boxes
-    # (left and right) and last 2 values are for bottom 2 boxes(left and right).
-    while 1:
-        # For first 2 values
-        if -10 <= (BoxCoordinates[0][0] - BoxCoordinates[1][0]) <= 10:
-            del BoxCoordinates[1]
-        # For last 2 values
-        elif -10 <= (BoxCoordinates[-1][0] - BoxCoordinates[-2][0]) <= 10:
-            del BoxCoordinates[-2]
-        # Break if done
-        else:
-            break
-
-    # GuidingBoxes value is set by filtering boxes in a cyclic
-    # order starting from top left box.
-    if BoxCoordinates[0][0] < BoxCoordinates[1][0]:
-        if BoxCoordinates[-1][0] < BoxCoordinates[-2][0]:
-            GuidingCornerBoxes = [BoxCoordinates[0], BoxCoordinates[1],
-                                  BoxCoordinates[-2], BoxCoordinates[-1]]
-        else:
-            GuidingCornerBoxes = [BoxCoordinates[0], BoxCoordinates[1],
-                                  BoxCoordinates[-1], BoxCoordinates[-2]]
+    if ImageShape[0] <= ImageShape[1]:
+        IterateTill = ImageShape[0]
     else:
-        if BoxCoordinates[-1][0] < BoxCoordinates[-2][0]:
-            GuidingCornerBoxes = [BoxCoordinates[1], BoxCoordinates[0],
-                                  BoxCoordinates[-2], BoxCoordinates[-1]]
-        else:
-            GuidingCornerBoxes = [BoxCoordinates[1], BoxCoordinates[0],
-                                  BoxCoordinates[-1], BoxCoordinates[-2]]
+        IterateTill = ImageShape[1]
+
+    TLCornerTag = CornerTag("TL", 0, 0, 1, 1, 0, 1)
+    TRCornerTag = CornerTag("TR", (ImageShape[1] - 1), 0, -1, 1, 2, 1)
+    BRCornerTag = CornerTag("BR", (ImageShape[1] - 1), (ImageShape[0] - 1), -1, -1, 2, 3)
+    BLCornerTag = CornerTag("BL", 0, (ImageShape[0] - 1), 1, -1, 0, 3)
+
+    GuidingCornerBoxes.append(FindCornerBox(BoxCoordinates, TLCornerTag, IterateTill))
+    GuidingCornerBoxes.append(FindCornerBox(BoxCoordinates, TRCornerTag, IterateTill))
+    GuidingCornerBoxes.append(FindCornerBox(BoxCoordinates, BRCornerTag, IterateTill))
+    GuidingCornerBoxes.append(FindCornerBox(BoxCoordinates, BLCornerTag, IterateTill))
 
     return GuidingCornerBoxes
 
@@ -237,7 +367,7 @@ def FindGuidingBoxes(MaskedImage):
 
     # Read all template images and run.
     for ImageName in os.listdir(TemplateImagesFolderPath):
-        print(ImageName)                    # Verifying name of image
+        #print(ImageName)                    # Verifying name of image
         # Reading in image
         TemplateImage = cv2.imread(TemplateImagesFolderPath + "/" + ImageName)
 
@@ -349,7 +479,7 @@ def RunCode():
     MaskedImage = MaskImage()
 
     BoxCoordinates = FindGuidingBoxes(MaskedImage)
-    GuidingCornerBoxes = FindGuidingCornerBoxes(BoxCoordinates)
+    GuidingCornerBoxes = FindGuidingCornerBoxes(BoxCoordinates, MaskedImage.shape)
     GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
     LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(BoxCoordinates, Image.shape[1] // 2,
                                                                    GuidingCornerBoxesCenter)
@@ -367,7 +497,7 @@ def RunCode():
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
     # ====================================================================================
-    cv2.imshow("GuidingCentre", Image)
+    cv2.imshow("LeftAndRight", Image)
 
     return LeftGuidingBoxes, RightGuidingBoxes
 
@@ -397,7 +527,7 @@ def FindBoundingBoxes(InputImagePath=None, ResizeInputImageTo=None):
         Image = cv2.resize(Image, ResizeInputImageTo)
 
     cv2.imshow("Input", Image)
-    print(Image.shape)
+    #print(Image.shape)
     LeftGuidingBoxes, RightGuidingBoxes = RunCode()
 
     cv2.waitKey(0)
