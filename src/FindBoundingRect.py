@@ -17,8 +17,8 @@ import time
 
 t1 = time.time()
 # Read and resize Input OMR Image
-Image = cv2.imread("InputImages/Blank1.jpg")
-Image = cv2.resize(Image, (int(Image.shape[1]*0.8), int(Image.shape[0]*0.8)))
+Image = cv2.imread("InputImages/Blank2.jpeg")
+Image = cv2.resize(Image, (int(Image.shape[1] * 0.8), int(Image.shape[0] * 0.8)))
 cv2.imshow("Input", Image)
 
 
@@ -45,6 +45,7 @@ def MaskImage(Image):
     cv2.imshow("Masked", MaskedBlurImage)
 
     return MaskedBlurImage
+
 
 ################################################################################
 # Function      : TemplateMatching
@@ -78,15 +79,14 @@ def TemplateMatching(MaskedImage, TemplateImage, OMRImage):
     else:
         template = TemplateImage
 
-
     w, h = template.shape[::-1]
 
-    res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
+    res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
     threshold = 0.8
-    loc = np.where( res >= threshold)
+    loc = np.where(res >= threshold)
     for pt in zip(*loc[::-1]):
         BoxCoordinates.append([pt[0], pt[1], (pt[0] + w), (pt[1] + h)])
-        #cv2.rectangle(OMRImage, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+        # cv2.rectangle(OMRImage, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
 
     return BoxCoordinates
 
@@ -133,7 +133,7 @@ def FilterBoxCoordinates(BoxCoordinates):
         FoundIntersectingArea = 0
         Rect1 = BoxCoordinates[I].copy()
 
-        for J in range(I+1, LengthOfBoxCoordinates):
+        for J in range(I + 1, LengthOfBoxCoordinates):
             Rect2 = BoxCoordinates[J].copy()
 
             if IntersectingArea(Rect1, Rect2) is True:
@@ -163,8 +163,8 @@ def FilterBoxCoordinates(BoxCoordinates):
 def FindGuidingCornerBoxes(BoxCoordinates):
     # Sorting wrt y coordinate of top left corner so that top values are for Boxes
     # at the top and last values depict value for boxes at the bottom.
-    BoxCoordinates = sorted(BoxCoordinates, key=lambda l:l[1])
-    
+    BoxCoordinates = sorted(BoxCoordinates, key=lambda l: l[1])
+
     # In this loop it is made sure that first 2 values are for top 2 boxes
     # (left and right) and last 2 values are for bottom 2 boxes(left and right).
     while 1:
@@ -214,7 +214,7 @@ def CenterOfBoxes(GuidingBoxes):
     GuidingBoxesCenter = []
 
     for i in GuidingBoxes:
-        Center = ((i[0] + i[2])//2, (i[1] + i[3])//2)
+        Center = ((i[0] + i[2]) // 2, (i[1] + i[3]) // 2)
         GuidingBoxesCenter.append(Center)
 
     return GuidingBoxesCenter
@@ -244,7 +244,7 @@ def FindGuidingBoxes(MaskedImage):
 
     # For enlarging template image.
     for i in range(3):
-        TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1]+i, TemplateImageSize[0]+i))
+        TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] + i, TemplateImageSize[0] + i))
 
         BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
         RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
@@ -263,8 +263,76 @@ def FindGuidingBoxes(MaskedImage):
     return FilterBoxCoordinates(FinalBoxCoordinates)
 
 
-def SplitGuidingBoxes(BoxCoordinates, HalfWidthOfImage):
-    pass
+################################################################################
+# Function      : TrueGuidingBoxes
+# Parameter     : GuidingBoxesList - List of boxes from which true guiding
+#                                    boxes are to be founded.
+#                 GuidingLineC1, GuidingLineC2 - Coordinates of centre of
+#                                                guiding corner boxes.
+#                 TrueGuidingBoxesList - List of true guiding boxes found.
+#                 {Rest parameters are explained.}
+# Description   : This function filters the true guiding boxes from the list
+#                 of boxes provided.
+# Return        : TrueGuidingBoxesList
+################################################################################
+def TrueGuidingBoxes(GuidingBoxesList, GuidingLineC1, GuidingLineC2):
+    TrueGuidingBoxesList = []
+
+    # Now let (x1, y1) & (x2, y2) be the points of guiding line(coordinates of center of guiding corner boxes).
+    # Slope of this line be "Slope" and its value is ((y2 - y1)/(x2 - x1)).
+    # Let inverse of slope be "B", and its value is ((x2 - x1)/(y2 - y1)).
+    # Let "A" be of value (x1 - y1*B).
+    # Here "A" & "B" are constants.
+    # Value of x-coordinate of a point on line at y-coordinate y3 is (X = A + y3*B).
+    # To check if the guiding box is truly a guiding box, the value X must lie between x3 and x4
+    # where (x3, y3) & (x4, y4) are coordinates for a rectangle of guiding box.
+
+    B = ((GuidingLineC2[0] - GuidingLineC1[0]) / (GuidingLineC2[1] - GuidingLineC1[1]))
+    A = (GuidingLineC1[0] - (GuidingLineC1[1] * B))
+
+    for Box in GuidingBoxesList:
+        X = (A + (Box[1] * B))
+        if Box[0] <= X <= Box[2]:
+            TrueGuidingBoxesList.append(Box)
+
+    return TrueGuidingBoxesList
+
+
+################################################################################
+# Function      : SplitAndFindGuidingBoxes
+# Parameter     : BoxCoordinates - List of all the boxes found.
+#                 LeftGuidingBoxes, RightGuidingBoxes - List of left and right
+#                       guiding boxes found.(First all the boxes are divided to
+#                       left and right and the true guiding boxes are found.)
+#                 HalfWidthOfImage - Half of width of image(From which left and
+#                                    right boxes are separated).
+#                 {Rest parameters are explained.}
+# Description   : This function filters the true left and right guiding boxes
+#                 from the list of boxes provided.
+# Return        : LeftGuidingBoxes, RightGuidingBoxes
+################################################################################
+def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxesCenter):
+    LeftGuidingBoxes = []
+    RightGuidingBoxes = []
+
+    BoxCoordinates = sorted(BoxCoordinates, key=lambda l: l[0])
+
+    # Filter all boxes to left and right
+    for i in BoxCoordinates:
+        if i[0] <= HalfWidthOfImage:
+            LeftGuidingBoxes.append(i)
+        else:
+            RightGuidingBoxes.append(i)
+
+    LeftGuidingBoxes = TrueGuidingBoxes(LeftGuidingBoxes, GuidingCornerBoxesCenter[0], GuidingCornerBoxesCenter[3])
+    RightGuidingBoxes = TrueGuidingBoxes(RightGuidingBoxes, GuidingCornerBoxesCenter[1], GuidingCornerBoxesCenter[2])
+
+    # Arranging from top to bottom line wise.
+    LeftGuidingBoxes = sorted(LeftGuidingBoxes, key=lambda l: l[1])
+    RightGuidingBoxes = sorted(RightGuidingBoxes, key=lambda l: l[1])
+
+    return LeftGuidingBoxes, RightGuidingBoxes
+
 
 ################################################################################
 # Function      : RunCode
@@ -282,13 +350,22 @@ def RunCode():
     FinalBoxCoordinates = FindGuidingBoxes(MaskedImage)
     GuidingCornerBoxes = FindGuidingCornerBoxes(FinalBoxCoordinates)
     GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
-    #LeftGuidingBoxes, RightGuidingBoxes = SplitGuidingBoxes(FinalBoxCoordinates, Image.shape[1]//2)
+    LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(FinalBoxCoordinates,
+                                                                   Image.shape[1] // 2, GuidingCornerBoxesCenter)
 
-    for i in FinalBoxCoordinates:
+    if len(LeftGuidingBoxes) == len(RightGuidingBoxes):
+        print("Yes, program working correctly")
+    else:
+        print("Guiding Boxes not found correctly.")
+
+    # =====================Just for visualisation, to be deleted==========================
+    for i in LeftGuidingBoxes:
+        cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
+    for i in RightGuidingBoxes:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
-
+    # ====================================================================================
     cv2.imshow("GuidingCentre", Image)
 
 
@@ -296,4 +373,4 @@ RunCode()
 t2 = time.time()
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-print(t2-t1)
+print(t2 - t1)
