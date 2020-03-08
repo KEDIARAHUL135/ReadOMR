@@ -13,8 +13,9 @@
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
+import time
 
-
+t1 = time.time()
 # Read and resize Input OMR Image
 Image = cv2.imread("InputImages/Blank1.jpg")
 Image = cv2.resize(Image, (int(Image.shape[1]*0.8), int(Image.shape[0]*0.8)))
@@ -49,20 +50,20 @@ def MaskImage(Image):
 # Function      : TemplateMatching
 # Parameter     : MaskedImage - It contains the Masked Image.
 #                 TemplateImage - It contains template image of horizontal
-#                                 rectangles to be found.
+#                                 boxes to be found.
 #                 OMRImage - It contains input OMR Image.
-#                 RectCoordinates - It contains the coordinates of top left
+#                 BoxCoordinates - It contains the coordinates of top left
 #                                   corner and bottom right corner of the
-#                                   rectangles as a list of list.
+#                                   boxes as a list of list.
 #                 {Rest all the parameters ate copied from the link given
 #                 and are self explanatory.}
 # Description   : This function matches the template image o the masked Image
-#                 to find the horizontal rectangles and returns the list of
-#                 rectangles detected.
-# Return        : RectCoordinates
+#                 to find the horizontal boxes and returns the list of
+#                 boxes detected.
+# Return        : BoxCoordinates
 ################################################################################
 def TemplateMatching(MaskedImage, TemplateImage, OMRImage):
-    RectCoordinates = []
+    BoxCoordinates = []
 
     # Code copied from -
     # https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html
@@ -84,17 +85,17 @@ def TemplateMatching(MaskedImage, TemplateImage, OMRImage):
     threshold = 0.8
     loc = np.where( res >= threshold)
     for pt in zip(*loc[::-1]):
-        RectCoordinates.append([pt[0], pt[1], (pt[0] + w), (pt[1] + h)])
+        BoxCoordinates.append([pt[0], pt[1], (pt[0] + w), (pt[1] + h)])
         #cv2.rectangle(OMRImage, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
 
-    return RectCoordinates
+    return BoxCoordinates
 
 
 ################################################################################
 # Function      : IntersectingArea
 # Parameter     : {Self explanatory}
 # Description   : This function checks if there is some intersecting area
-#                 between 2 rectangles.
+#                 between 2 rectangles/boxes.
 # Return        : True - If intersecting area is present.
 #                 False - If intersecting area is absent.
 ################################################################################
@@ -108,91 +109,91 @@ def IntersectingArea(Rect1, Rect2):
 
 
 ################################################################################
-# Function      : FilterRectCoordinates
-# Parameter     : RectCoordinates - It contains the coordinates of top left
+# Function      : FilterBoxCoordinates
+# Parameter     : BoxCoordinates - It contains the coordinates of top left
 #                                   corner and bottom right corner of the
-#                                   rectangles as a list of list.
-#                 LengthOfRectCoordinates - Stores the length of RectCoordinates.
+#                                   boxes as a list of list.
+#                 LengthOfBoxCoordinates - Stores the length of BoxCoordinates.
 #                 FoundIntersectingArea - Flag of whether Intersecting area is
 #                                         found or not.
 #                 Rect1, Rect2 - Stores 2 rectangles to be compared.
-#                 FinalRectCoordinates - Final list of rectangles which donot
-#                                        have any intersecting rectangles.
-# Description   : This function finds the intersecting area of 2 rectangles
-#                 from the list RectCoordinates and if no intersecting rectangle
-#                 is found, it stores the rectangle in FinalRectCoordinates.
-# Return        : FinalRectCoordinates
+#                 FinalBoxCoordinates - Final list of boxes which donot
+#                                        have any intersecting boxes.
+# Description   : This function finds the intersecting area of 2 boxes
+#                 from the list BoxCoordinates and if no intersecting box
+#                 is found, it stores the box in FinalBoxCoordinates.
+# Return        : FinalBoxCoordinates
 ################################################################################
-def FilterRectCoordinates(RectCoordinates):
-    FinalRectCoordinates = []
+def FilterBoxCoordinates(BoxCoordinates):
+    FinalBoxCoordinates = []
 
-    LengthOfRectCoordinates = len(RectCoordinates)
+    LengthOfBoxCoordinates = len(BoxCoordinates)
 
-    for I in range(LengthOfRectCoordinates):
+    for I in range(LengthOfBoxCoordinates):
         FoundIntersectingArea = 0
-        Rect1 = RectCoordinates[I].copy()
+        Rect1 = BoxCoordinates[I].copy()
 
-        for J in range(I+1, LengthOfRectCoordinates):
-            Rect2 = RectCoordinates[J].copy()
+        for J in range(I+1, LengthOfBoxCoordinates):
+            Rect2 = BoxCoordinates[J].copy()
 
             if IntersectingArea(Rect1, Rect2) is True:
                 FoundIntersectingArea = 1
                 break
 
         if FoundIntersectingArea == 0:
-            FinalRectCoordinates.append(RectCoordinates[I])
+            FinalBoxCoordinates.append(BoxCoordinates[I])
 
-    return FinalRectCoordinates
+    return FinalBoxCoordinates
 
 
 ################################################################################
 # Function      : FindGuidingBoxes
-# Parameter     : RectCoordinates - It contains the coordinates of top left
+# Parameter     : BoxCoordinates - It contains the coordinates of top left
 #                                   corner and bottom right corner of the
-#                                   rectangles as a list of list.
+#                                   Boxes as a list of list.
 #                 GuidingBoxes - It contains coordinates of top left
 #                                corner and bottom right corner of the four
-#                                corner rectangles as a list of list in the
+#                                corner boxes as a list of list in the
 #                                clockwise fashion starting from top left
-#                                rectangle.
-# Description   : This function finds the 4 corner rectangle coordinates from
-#                 RectCoordinates list.
+#                                box.
+# Description   : This function finds the 4 corner box coordinates from
+#                 BoxCoordinates list.
 # Return        : GuidingBoxes
 ################################################################################
-def FindGuidingCornerBoxes(RectCoordinates):
-    # Sorting wrt y coordinate of top left corner so that top values are for rectangles
-    # at the top and last values depict value for rectangles at the bottom.
-    RectCoordinates = sorted(RectCoordinates, key=lambda l:l[1])
+def FindGuidingCornerBoxes(BoxCoordinates):
+    # Sorting wrt y coordinate of top left corner so that top values are for Boxes
+    # at the top and last values depict value for boxes at the bottom.
+    BoxCoordinates = sorted(BoxCoordinates, key=lambda l:l[1])
     
-    # In this loop it is made sure that first 2 values are for top 2 rectangles
-    # (left and right) and last 2 values are for bottom 2 rectangles(left and right).
+    # In this loop it is made sure that first 2 values are for top 2 boxes
+    # (left and right) and last 2 values are for bottom 2 boxes(left and right).
     while 1:
         # For first 2 values
-        if -10 <= (RectCoordinates[0][0] - RectCoordinates[1][0]) <= 10:
-            del RectCoordinates[1]
+        if -10 <= (BoxCoordinates[0][0] - BoxCoordinates[1][0]) <= 10:
+            del BoxCoordinates[1]
         # For last 2 values
-        elif -10 <= (RectCoordinates[-1][0] - RectCoordinates[-2][0]) <= 10:
-            del RectCoordinates[-2]
+        elif -10 <= (BoxCoordinates[-1][0] - BoxCoordinates[-2][0]) <= 10:
+            del BoxCoordinates[-2]
         # Break if done
         else:
             break
 
-    # GuidingBoxes value is set by filtering rectangles in a cyclic
-    # order starting from top left rectangle.
-    if RectCoordinates[0][0] < RectCoordinates[1][0]:
-        if RectCoordinates[-1][0] < RectCoordinates[-2][0]:
-            GuidingBoxes = [RectCoordinates[0], RectCoordinates[1],
-                            RectCoordinates[-2], RectCoordinates[-1]]
+    # GuidingBoxes value is set by filtering boxes in a cyclic
+    # order starting from top left box.
+    if BoxCoordinates[0][0] < BoxCoordinates[1][0]:
+        if BoxCoordinates[-1][0] < BoxCoordinates[-2][0]:
+            GuidingBoxes = [BoxCoordinates[0], BoxCoordinates[1],
+                            BoxCoordinates[-2], BoxCoordinates[-1]]
         else:
-            GuidingBoxes = [RectCoordinates[0], RectCoordinates[1],
-                            RectCoordinates[-1], RectCoordinates[-2]]
+            GuidingBoxes = [BoxCoordinates[0], BoxCoordinates[1],
+                            BoxCoordinates[-1], BoxCoordinates[-2]]
     else:
-        if RectCoordinates[-1][0] < RectCoordinates[-2][0]:
-            GuidingBoxes = [RectCoordinates[1], RectCoordinates[0],
-                            RectCoordinates[-2], RectCoordinates[-1]]
+        if BoxCoordinates[-1][0] < BoxCoordinates[-2][0]:
+            GuidingBoxes = [BoxCoordinates[1], BoxCoordinates[0],
+                            BoxCoordinates[-2], BoxCoordinates[-1]]
         else:
-            GuidingBoxes = [RectCoordinates[1], RectCoordinates[0],
-                            RectCoordinates[-1], RectCoordinates[-2]]
+            GuidingBoxes = [BoxCoordinates[1], BoxCoordinates[0],
+                            BoxCoordinates[-1], BoxCoordinates[-2]]
 
     return GuidingBoxes
 
@@ -200,13 +201,13 @@ def FindGuidingCornerBoxes(RectCoordinates):
 ################################################################################
 # Function      : CenterOfGuidingBoxes
 # Parameter     : GuidingBoxesCenter - It contains the coordinates of centre of
-#                                   guiding/corner rectangles found.
+#                                   guiding/corner boxes found.
 #                 GuidingBoxes - It contains coordinates of top left
 #                                corner and bottom right corner of the four
-#                                corner rectangles as a list of list in the
+#                                corner boxes as a list of list in the
 #                                clockwise fashion starting from top left
-#                                rectangle.
-# Description   : This function finds the centre of 4 corner rectangle found.
+#                                box.
+# Description   : This function finds the centre of 4 corner box found.
 # Return        : GuidingBoxesCenter
 ################################################################################
 def CenterOfBoxes(GuidingBoxes):
@@ -221,21 +222,21 @@ def CenterOfBoxes(GuidingBoxes):
 
 ################################################################################
 # Function      : CenterOfGuidingBoxes
-# Parameter     : FinalRectCoordinates - Final list of rectangles which donot
-#                                        have any intersecting rectangles.
-#                 TemplateImage - It reads the template image of guiding rectangles.
-#                 RectCoordinates - It contains the coordinates of top left
+# Parameter     : FinalBoxCoordinates - Final list of boxes which donot
+#                                        have any intersecting boxes.
+#                 TemplateImage - It reads the template image of guiding boxes.
+#                 BoxCoordinates - It contains the coordinates of top left
 #                                   corner and bottom right corner of the
-#                                   guiding rectangles as a list of list.
-#                 RetRectCoordinates - Holds return value of FilterRectCoordinates.
+#                                   guiding boxes as a list of list.
+#                 RetBoxCoordinates - Holds return value of FilterBoxCoordinates.
 #                 {Rest parameters are self explanatory}
-# Description   : This function finds the coordinates of guiding rectangles.
+# Description   : This function finds the coordinates of guiding boxes.
 #                 It does it by matching different sizes of template image with
-#                 the omr image and then filtering out repeating rectangles.
-# Return        : return value from FilterRectCoordinates
+#                 the omr image and then filtering out repeating boxes.
+# Return        : return value from FilterBoxCoordinates
 ################################################################################
 def FindGuidingBoxes(MaskedImage):
-    FinalRectCoordinates = []
+    FinalBoxCoordinates = []
     # Reads the template image.
     TemplateImage = cv2.imread("TemplateImage.png")
     cv2.imshow("TemplateImage", TemplateImage)
@@ -245,27 +246,30 @@ def FindGuidingBoxes(MaskedImage):
     for i in range(3):
         TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1]+i, TemplateImageSize[0]+i))
 
-        RectCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
-        RetRectCoordinates = FilterRectCoordinates(RectCoordinates)
-        for j in RetRectCoordinates:
-            FinalRectCoordinates.append(j)
+        BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
+        RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
+        for j in RetBoxCoordinates:
+            FinalBoxCoordinates.append(j)
 
     # For diminishing template image.
     for i in range(3):
         TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] - i, TemplateImageSize[0] - i))
-        RectCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
+        BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
 
-        RetRectCoordinates = FilterRectCoordinates(RectCoordinates)
-        for j in RetRectCoordinates:
-            FinalRectCoordinates.append(j)
+        RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
+        for j in RetBoxCoordinates:
+            FinalBoxCoordinates.append(j)
 
-    return FilterRectCoordinates(FinalRectCoordinates)
+    return FilterBoxCoordinates(FinalBoxCoordinates)
 
+
+def SplitGuidingBoxes(BoxCoordinates, HalfWidthOfImage):
+    pass
 
 ################################################################################
 # Function      : RunCode
 # Parameter     : MaskedImage - Contains the image masked for black colour.
-#                 FinalRectCoordinates - Final list of rectangles which donot
+#                 FinalBoxCoordinates - Final list of rectangles which donot
 #                                        have any intersecting rectangles.
 #                 {Rest parameters are self explanatory}
 # Description   : This function calls relevant functions one by one in order
@@ -275,11 +279,12 @@ def FindGuidingBoxes(MaskedImage):
 def RunCode():
     MaskedImage = MaskImage(Image)
 
-    FinalRectCoordinates = FindGuidingBoxes(MaskedImage)
-    GuidingCornerBoxes = FindGuidingCornerBoxes(FinalRectCoordinates)
+    FinalBoxCoordinates = FindGuidingBoxes(MaskedImage)
+    GuidingCornerBoxes = FindGuidingCornerBoxes(FinalBoxCoordinates)
     GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
+    #LeftGuidingBoxes, RightGuidingBoxes = SplitGuidingBoxes(FinalBoxCoordinates, Image.shape[1]//2)
 
-    for i in FinalRectCoordinates:
+    for i in FinalBoxCoordinates:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
@@ -288,5 +293,7 @@ def RunCode():
 
 
 RunCode()
+t2 = time.time()
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+print(t2-t1)
