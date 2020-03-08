@@ -162,8 +162,8 @@ def FilterRectCoordinates(RectCoordinates):
 def FindGuidingCornerBoxes(RectCoordinates):
     # Sorting wrt y coordinate of top left corner so that top values are for rectangles
     # at the top and last values depict value for rectangles at the bottom.
-    sorted(RectCoordinates, key=lambda l:l[1])
-
+    RectCoordinates = sorted(RectCoordinates, key=lambda l:l[1])
+    
     # In this loop it is made sure that first 2 values are for top 2 rectangles
     # (left and right) and last 2 values are for bottom 2 rectangles(left and right).
     while 1:
