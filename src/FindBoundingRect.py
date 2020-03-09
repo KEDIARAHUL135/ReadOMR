@@ -526,6 +526,41 @@ def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxe
 
 
 ################################################################################
+# Function      : ShrinkTotalBox
+# Parameter     : {All the parameters are explanatory.}
+# Description   : This function shrinks the box to the guiding box completely.
+#                 It does it by storing all the x and y coordinates of those
+#                 pixels which do not have black colour in XCoordinates and
+#                 YCoordinates respectively. Then the shrinked box will have
+#                 coordinates of top left corner as (min(XCoordinates),
+#                 min(YCoordinates)) and the bottom right corner as
+#                 (max(XCoordinates), max(YCoordinates)).
+# Return        : FinalBoxCoordinates
+################################################################################
+def ShrinkTotalBox(BoxCoordinates, MaskedImage):
+    FinalBoxCoordinates = []
+
+    for Box in BoxCoordinates:
+        XCoordinates = []
+        YCoordinates = []
+        x1, y1, x2, y2 = Box[0], Box[1], Box[2], Box[3]
+
+        for i in range(x1, (x2+1)):
+            for j in range(y1, (y2+1)):
+                # MaskedImage[j][i]
+                if MaskedImage[j][i] != 0:
+                    XCoordinates.append(i)
+                    YCoordinates.append(j)
+
+        XCoordinates = sorted(XCoordinates)
+        YCoordinates = sorted(YCoordinates)
+
+        FinalBoxCoordinates.append([XCoordinates[0], YCoordinates[0], XCoordinates[-1], YCoordinates[-1]])
+
+    return FinalBoxCoordinates
+
+
+################################################################################
 # Function      : RunCode
 # Parameter     : MaskedImage - Contains the image masked for black colour.
 #                 BoxCoordinates - Final list of boxes which donot have any
@@ -543,6 +578,8 @@ def RunCode():
     GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
     LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(BoxCoordinates, Image.shape[1] // 2,
                                                                    GuidingCornerBoxesCenter)
+    LeftGuidingBoxes = ShrinkTotalBox(LeftGuidingBoxes, MaskedImage)
+    RightGuidingBoxes = ShrinkTotalBox(RightGuidingBoxes, MaskedImage)
 
     if len(LeftGuidingBoxes) == len(RightGuidingBoxes):
         print("Yes, program working correctly")
@@ -577,7 +614,7 @@ def FindBoundingBoxes(InputImagePath=None, ResizeInputImageTo=None):
 
     # Read and resize Input OMR Image
     if InputImagePath == None:
-        Image = cv2.imread("InputImages/Blank2.jpeg")
+        Image = cv2.imread("InputImages/Blank1.jpg")
     else:
         Image = cv2.imread(InputImagePath)
 
