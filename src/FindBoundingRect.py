@@ -345,6 +345,69 @@ def CenterOfBoxes(GuidingBoxes):
 
 
 ################################################################################
+# Function      : CheckBoundaryForAllBlack
+# Parameter     : FoundWhite - Flag for if non black pixel is found on the
+#                              boundary.
+#                 {Rest parameters are self explanatory}
+# Description   : This function checks the boundary of the box for all black
+#                 pixel.
+# Return        : True - If all are black on boundary.
+#                 False - If all are not black o boundary.
+################################################################################
+def CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage):
+    FoundWhite = 0
+
+    for i in range(x1, (x2+1)):                     # Moving right
+        if MaskedImage[y1][i] != 0 or MaskedImage[y2][i] != 0:
+            FoundWhite = 1
+
+    if FoundWhite == 0:
+        for j in range(y1, (y2+1)):                 # Moving down
+            if MaskedImage[j][x1] != 0 or MaskedImage[j][x2] != 0:
+                FoundWhite = 1
+
+    if FoundWhite == 0:
+        return True             # All are black.
+    else:
+        return False            # Some are white.
+
+
+################################################################################
+# Function      : ShrinkBoxWRTBoundary
+# Parameter     : ShrinkedBoxCoordinates - It contains the list of coordinates
+#                                          of box after shrinking wrt boundary.
+#                 FinalBox - It contains coordinates of individual shrinked box
+#                            and is then appended to ShrinkedBoxCoordinates.
+#                 {Rest parameters are self explanatory}
+# Description   : This function shrinks the boxes wrt the boundary. A box is
+#                 shrinked if all the pixels on the boundary of the box are
+#                 black and the central pixel of the box is not black.
+# Return        : ShrinkedBoxCoordinates
+################################################################################
+def ShrinkBoxWRTBoundary(BoxCoordinates, MaskedImage):
+    ShrinkedBoxCoordinates = []
+    for Box in BoxCoordinates:
+        x1, y1, x2, y2 = Box[0], Box[1], Box[2], Box[3]
+        FinalBox = Box
+
+        while x1 <= x2 and y1 <= y2:
+            # Check Boundary of box for all black.
+            if CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage):
+                # Check center of box for non white
+                if MaskedImage[int((y2+y1)/2)][int((x1+x2)/2)] != 0:
+                    FinalBox = [x1, y1, x2, y2]
+
+            x1 += 1
+            y1 += 1
+            x2 -= 1
+            y2 -= 1
+
+        ShrinkedBoxCoordinates.append(FinalBox)
+
+    return ShrinkedBoxCoordinates
+
+
+################################################################################
 # Function      : FindGuidingBoxes
 # Parameter     : FinalBoxCoordinates - Final list of boxes which donot
 #                                        have any intersecting boxes.
@@ -367,10 +430,7 @@ def FindGuidingBoxes(MaskedImage):
 
     # Read all template images and run.
     for ImageName in os.listdir(TemplateImagesFolderPath):
-        #print(ImageName)                    # Verifying name of image
-        # Reading in image
         TemplateImage = cv2.imread(TemplateImagesFolderPath + "/" + ImageName)
-
         TemplateImageSize = TemplateImage.shape
 
         # For enlarging template image.
@@ -391,7 +451,7 @@ def FindGuidingBoxes(MaskedImage):
             for j in RetBoxCoordinates:
                 FinalBoxCoordinates.append(j)
 
-    return FilterBoxCoordinates(FinalBoxCoordinates)
+    return FilterBoxCoordinates(ShrinkBoxWRTBoundary(FinalBoxCoordinates, MaskedImage))
 
 
 ################################################################################
@@ -497,7 +557,7 @@ def RunCode():
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
     # ====================================================================================
-    cv2.imshow("LeftAndRight", Image)
+    cv2.imshow("GuidingBoxes", Image)
 
     return LeftGuidingBoxes, RightGuidingBoxes
 
@@ -517,7 +577,7 @@ def FindBoundingBoxes(InputImagePath=None, ResizeInputImageTo=None):
 
     # Read and resize Input OMR Image
     if InputImagePath == None:
-        Image = cv2.imread("InputImages/OMR1/Blank.jpeg")
+        Image = cv2.imread("InputImages/Blank2.jpeg")
     else:
         Image = cv2.imread(InputImagePath)
 
