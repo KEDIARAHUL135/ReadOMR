@@ -9,6 +9,7 @@
 import cv2
 import numpy as np
 import src.macros as M
+from src.FindBoundingRect import FindBoundingBoxes
 import json
 
 # Read Input and resize it
@@ -18,93 +19,54 @@ InputImage = cv2.resize(InputImage, NewSize)
 
 
 ################################################################################
-# Function      : HoughCircleDetection
-# Parameter     : GrayImage - It contains gray scale image of Input Image
-#                 BlurImage - It contains blur image of GrayImage
-#                 Circles - It contains information of all the circles
-#                           detected by HoughCircles function.
-#                           Information is - [x-coordinate of centre,
-#                              y-coordinate of centre, radius of circle]
-# Description   : This function finds all the possible circles in the input
-#                 image by using HoughCircles algorithm.
-# Return        : Circles
+# Function      : SetCoordinatesOfCornerGuidingBoxes
+# Parameter     : InitialCorners - It contains the initial coordinates of 4
+#                             corners in clockwise order starting from top left.
+#                 FinalCorners - It contains the final coordinates of the 4
+#                           corners in the same order as that of InitialCorners.
+# Description   : This sets the Initial and Final coordinates of the guiding
+#                 corner boxes.
+# Return        : InitialCorners, FinalCorners
 ################################################################################
-def HoughCircleDetection():
-    GrayImage = cv2.cvtColor(InputImage, cv2.COLOR_BGR2GRAY)
-    BlurImage = cv2.medianBlur(GrayImage, 7)
-
-    Circles = cv2.HoughCircles(BlurImage, cv2.HOUGH_GRADIENT, M.dp, 20,
-                               param1=50, param2=30, minRadius=M.MinRadius, maxRadius=M.MaxRadius)
-    Circles = np.uint16(np.around(Circles))
-
-    return Circles
+def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes):
+    InitialCorners = np.float32([[(LeftGuidingBoxes[0][0] + LeftGuidingBoxes[0][2])//2, (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2],
+                                 [(RightGuidingBoxes[0][0] + RightGuidingBoxes[0][2])//2, (RightGuidingBoxes[0][1] + RightGuidingBoxes[0][3])//2],
+                                 [(RightGuidingBoxes[-1][0] + RightGuidingBoxes[-1][2])//2, (RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2],
+                                 [(LeftGuidingBoxes[-1][0] + LeftGuidingBoxes[-1][2])//2, (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2]])
 
 
-################################################################################
-# Function      : FindCornerCircles
-# Parameter     : Circles - It contains information of all the circles
-#                           detected by HoughCircles function.
-#                           Information is - [x-coordinate of centre,
-#                              y-coordinate of centre, radius of circle]
-#                 NumOfCCFound - It keeps the count of number of centre
-#                                circles found in the image during
-#                                filtering of circles.
-#                 CornerCircles - It stores information of the corner
-#                                 circles detected.
-#                 FinalCornerCircles - It is a dummy variable used to add
-#                           a dimension in CornerCircles to make it similar
-#                           to the output circles array from HoughCircles algo.
-# Description   : This function finds corner circles from the array of all
-#                 the circles found by HoughCircleDetection.
-# Return        : FinalCornerCircles
-################################################################################
-def FindCornerCircles(Circles):
-    CornerCircles = np.zeros((4, 3), np.uint16())
-    NumOfCCFound = 0
+    # Final coordinates of 4 corner circles in another image
+    FinalCorners = np.float32([[0., 0.],
+                               [(M.Size - 1), 0.],
+                               [(M.Size - 1), (M.Size - 1)],
+                               [0., (M.Size - 1)]])
 
-    for i in Circles[0]:
-        if NumOfCCFound < 4:
-            if ((i[0] <= M.ThreshLengthCC) & (i[1] <= M.ThreshLengthCC)).all():
-                CornerCircles[NumOfCCFound] = i
-                NumOfCCFound += 1
-            elif ((i[0] <= M.ThreshLengthCC) & (i[1] >= (M.Size - M.ThreshLengthCC))).all():
-                CornerCircles[NumOfCCFound] = i
-                NumOfCCFound += 1
-            elif ((i[0] >= (M.Size - M.ThreshLengthCC)) & (i[1] <= M.ThreshLengthCC)).all():
-                CornerCircles[NumOfCCFound] = i
-                NumOfCCFound += 1
-            elif ((i[0] >= (M.Size - M.ThreshLengthCC)) & (i[1] >= (M.Size - M.ThreshLengthCC))).all():
-                CornerCircles[NumOfCCFound] = i
-                NumOfCCFound += 1
-        else:
-            break
+    if M.EXPAND_INITIAL_POINTS:
+        ExpandInitialCorners(InitialCorners)
 
-    FinalCornerCircles = np.zeros((1, 4, 3), np.uint16())
-    FinalCornerCircles[0] = CornerCircles
-
-    return FinalCornerCircles
+    return InitialCorners, FinalCorners
 
 
 ################################################################################
-# Function      : ExpandInitialPoints
-# Parameter     : InitialPoints - It contains the initial coordinates of
-#                                 four corner circles in clockwise order
-#                                 starting from top left.
-# Description   : This function corrects the value of InitialPoints parameter
+# Function      : ExpandInitialCorners
+# Parameter     : InitialCorners - It contains the initial coordinates of 4
+#                             corners in clockwise order starting from top left.
+# Description   : This function corrects the value of InitialCorners parameter
 #                 if and as required to expand the image after corner detection
 #                 for cropping.
-# Return        : InitialPoints
+# Return        : InitialCorners
 ################################################################################
-def ExpandInitialPoints(InitialPoints):
+def ExpandInitialCorners(InitialCorners):
     for k in range(4):
         if (k//2) == 0:
-            InitialPoints[k % 4][k % 2] -= M.EXPAND_BY[k]
-            InitialPoints[(k - 1) % 4][k % 2] -= M.EXPAND_BY[k]
+            InitialCorners[k % 4][k % 2] -= M.EXPAND_BY[k]
+            InitialCorners[(k - 1) % 4][k % 2] -= M.EXPAND_BY[k]
         else:
-            InitialPoints[k % 4][k % 2] += M.EXPAND_BY[k]
-            InitialPoints[(k - 1) % 4][k % 2] += M.EXPAND_BY[k]
+            InitialCorners[k % 4][k % 2] += M.EXPAND_BY[k]
+            InitialCorners[(k - 1) % 4][k % 2] += M.EXPAND_BY[k]
 
-    return InitialPoints
+    return InitialCorners
+
 
 ################################################################################
 # Function      : ProjectiveTransform
@@ -124,43 +86,9 @@ def ExpandInitialPoints(InitialPoints):
 #                 sheet so that then the answers can be found from OMR Sheet.
 # Return        : OutputImage
 ################################################################################
-def ProjectiveTransform(CornerCircles):
-    # Finding initial coordinates of 4 corner circles
-    InitialPoints = np.zeros((4, 2), np.float32)
-
-    for i in CornerCircles[0]:
-        # Top two
-        if i[1] <= M.ThreshLengthCC:
-            ## Top Left
-            if i[0] <= M.ThreshLengthCC:
-                InitialPoints[0][0] = i[0]
-                InitialPoints[0][1] = i[1]
-            ## Top Right
-            else:
-                InitialPoints[1][0] = i[0]
-                InitialPoints[1][1] = i[1]
-
-        # Bottom two
-        else:
-            ## Bottom Left
-            if i[0] <= M.ThreshLengthCC:
-                InitialPoints[3][0] = i[0]
-                InitialPoints[3][1] = i[1]
-            ## Bottom Right
-            else:
-                InitialPoints[2][0] = i[0]
-                InitialPoints[2][1] = i[1]
-
-    if M.EXPAND_INITIAL_POINTS == 1:
-        ExpandInitialPoints(InitialPoints)
-
-    # Final coordinates of 4 corner circles in another image
-    FinalPoints = np.float32([[0., 0.], [(M.Size - 1), 0.],
-                              [(M.Size - 1), (M.Size - 1)],
-                              [0., (M.Size - 1)]])
-
+def ProjectiveTransform(InitialCorners, FinalCorners):
     # Applying projective transform
-    ProjectiveMatrix = cv2.getPerspectiveTransform(InitialPoints, FinalPoints)
+    ProjectiveMatrix = cv2.getPerspectiveTransform(InitialCorners, FinalCorners)
     OutputImage = cv2.warpPerspective(InputImage, ProjectiveMatrix, NewSize)
     cv2.imshow("Image", OutputImage)
     return OutputImage
@@ -218,15 +146,12 @@ def StoreInJSON(AnswerDict):
 # Return        : AnswerDict
 ################################################################################
 def CropOMR_FindAnswers():
-    # Extract the corner four circle's centre point
-    ## Apply Hough Circle Detection
-    Circles = HoughCircleDetection()
 
-    ## Filter circles according to their position. We are interested in corner circles only
-    CornerCircles = FindCornerCircles(Circles)
+    LeftGuidingBoxes, RightGuidingBoxes = FindBoundingBoxes(M.InputImagePath, NewSize)
 
+    InitialCorners, FinalCorners = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes)
     # Applying Projective transformation.
-    CroppedOMRSheetImage = ProjectiveTransform(CornerCircles)
+    CroppedOMRSheetImage = ProjectiveTransform(InitialCorners, FinalCorners)
 
     # Extract different answers
     AnswerDict = ExtractAnswers(CroppedOMRSheetImage)

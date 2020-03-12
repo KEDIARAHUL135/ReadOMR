@@ -613,12 +613,12 @@ def FindBoundingBoxes(InputImagePath=None, ResizeInputImageTo=None):
     global Image
 
     # Read and resize Input OMR Image
-    if InputImagePath == None:
+    if InputImagePath is None:
         Image = cv2.imread("InputImages/Blank1.jpg")
     else:
         Image = cv2.imread(InputImagePath)
 
-    if ResizeInputImageTo == None:
+    if ResizeInputImageTo is None:
         Image = cv2.resize(Image, (600, 800))       # Default Value is set to (600, 800).
     else:
         Image = cv2.resize(Image, ResizeInputImageTo)
