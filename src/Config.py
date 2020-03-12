@@ -10,6 +10,7 @@
 # To configure a OMR Sheet, call Configure() function with suitable params and follow and fill the instructions.
 
 import cv2
+from src.CropOMR import CropOMR
 
 
 def click_and_crop(event, x, y, flags, param):
@@ -129,7 +130,7 @@ def RunCode():
     return
 
 
-def Configure(InputImagePath=None, ResizeInputImageTo=None):
+def Configure(InputImagePath, ResizeInputImageTo):
     global Image, f, OMR_Path
 
     OMR_Name = input("Enter OMR Sheet name : ")
@@ -137,20 +138,11 @@ def Configure(InputImagePath=None, ResizeInputImageTo=None):
 
     # Open Config.txt file
     f = open(OMR_Path, "w")
-    # Read and resize Input OMR Image
-    if InputImagePath is None:
-        Image = cv2.imread("InputImages/Blank2.jpeg")
-    else:
-        Image = cv2.imread(InputImagePath)
+    # Read Input OMR Image
+    Image = cv2.imread(InputImagePath)
 
-    if ResizeInputImageTo is None:
-        Image = cv2.resize(Image, (600, 800))       # Default Value is set to (600, 800).
-    else:
-        Image = cv2.resize(Image, ResizeInputImageTo)
+    CropOMR(Image, ResizeInputImageTo)
 
     RunCode()
 
     f.close()
-
-
-Configure()
