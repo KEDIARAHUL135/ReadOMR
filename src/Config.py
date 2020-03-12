@@ -60,11 +60,11 @@ def AskQuestion():
     Corner_Y = refPt[0][1]
     Width = refPt[1][0] - refPt[0][0] + 1
     Length = refPt[1][1] - refPt[0][1] + 1
-    NumOfRows = input("Enter the number of rows in OMR : ")
-    NumOfCols = input("Enter the number of columns in OMR : ")
+    NumOfRows = int(input("Enter the number of rows in OMR : "))
+    NumOfCols = int(input("Enter the number of columns in OMR : "))
     By_CorR = input('Each letter of the answer is present in column or row? (Press "R" for Row or "C" for column): ')
-    Alp_or_Num = input("Answer is alphabetical or numerical(Enter 0 if alphabetical or 1 if numerical): ")
-    StartFromIndex = input("Answer is started from index : ")
+    Alp_or_Num = int(input("Answer is alphabetical or numerical(Enter 0 if alphabetical or 1 if numerical): "))
+    StartFromIndex = int(input("Answer is started from index : "))
 
     QuestionParam = [QuestionName, Corner_X, Corner_Y, Width, Length, NumOfRows, NumOfCols, By_CorR, Alp_or_Num, StartFromIndex]
 
@@ -73,12 +73,14 @@ def AskQuestion():
 
 def RunCode():
     QuestionParam = AskQuestion()
-
+    f.write("{}\n".format(QuestionParam))
 
 
 def Configure(InputImagePath=None, ResizeInputImageTo=None):
-    global Image
+    global Image, f
 
+    # Open Config.txt file
+    f = open("Config.txt", "w")
     # Read and resize Input OMR Image
     if InputImagePath == None:
         Image = cv2.imread("InputImages/Blank2.jpeg")
@@ -92,5 +94,6 @@ def Configure(InputImagePath=None, ResizeInputImageTo=None):
 
     RunCode()
 
+    f.close()
 
 Configure()
