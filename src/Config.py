@@ -118,7 +118,7 @@ def RunCode():
 
     f.write("{}\n".format(QuestionParam))
 
-    IfAddQ = input("Add another question(Y/N)? ")
+    IfAddQ = input("\nAdd another question(Y/N)? ")
 
     if IfAddQ == "y" or IfAddQ == "Y":
         RunCode()
