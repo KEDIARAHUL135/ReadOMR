@@ -73,8 +73,6 @@ def RectBoundingRegion():
             break
 
 
-
-
 def AskQuestion():
     QuestionName = input("Enter name of the question : ")
     RectBoundingRegion()
@@ -129,10 +127,13 @@ def RunCode():
 
 
 def Configure(InputImagePath=None, ResizeInputImageTo=None):
-    global Image, f
+    global Image, f, OMR_Path
+
+    OMR_Name = input("Enter OMR Sheet name : ")
+    OMR_Path = "ConfigFiles/" + OMR_Name + "_Config.txt"
 
     # Open Config.txt file
-    f = open("Config.txt", "w")
+    f = open(OMR_Path, "w")
     # Read and resize Input OMR Image
     if InputImagePath == None:
         Image = cv2.imread("InputImages/Blank2.jpeg")
@@ -147,5 +148,6 @@ def Configure(InputImagePath=None, ResizeInputImageTo=None):
     RunCode()
 
     f.close()
+
 
 Configure()
