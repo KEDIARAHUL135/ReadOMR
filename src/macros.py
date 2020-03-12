@@ -10,7 +10,7 @@
 #                 also enhance the output of the code.
 ################################################################################
 
-import src.GetAnswers as GA
+import GetAnswers as GA
 
 # Input Image Path
 InputImagePath = "InputImages/OMR1/Filled1.jpeg"

@@ -10,7 +10,7 @@
 # To configure a OMR Sheet, call Configure() function with suitable params and follow and fill the instructions.
 
 import cv2
-from src.CropOMR import CropOMR
+from CropOMR import CropOMR
 
 
 def click_and_crop(event, x, y, flags, param):

@@ -10,8 +10,8 @@
 
 import cv2
 import numpy as np
-import src.macros as M
-from src.FindBoundingRect import FindBoundingBoxes
+import macros as M
+from FindBoundingRect import FindBoundingBoxes
 
 
 ################################################################################

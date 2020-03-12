@@ -7,8 +7,8 @@
 ################################################################################
 
 import cv2
-import src.macros as M
-from src.CropOMR import CropOMR
+import macros as M
+from CropOMR import CropOMR
 import json
 
 # Read Input and resize it

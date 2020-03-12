@@ -8,7 +8,7 @@
 ################################################################################
 import numpy as np
 import cv2
-import src.macros as M
+import macros as M
 
 
 class FindAnswer:
