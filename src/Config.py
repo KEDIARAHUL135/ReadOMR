@@ -6,8 +6,10 @@
 # Description   : This file is used to configure the OMR Sheet.
 ################################################################################
 
+# Detailed documentation for this file is not provided as it is not used continuously in the program.
+# To configure a OMR Sheet, call Configure() function with suitable params and follow and fill the instructions.
+
 import cv2
-import numpy as np
 
 
 def click_and_crop(event, x, y, flags, param):
@@ -86,7 +88,8 @@ def AskQuestion():
     Alp_or_Num = int(input("Answer is alphabetical or numerical(Enter 0 if alphabetical or 1 if numerical): "))
     StartFromIndex = int(input("Answer is started from index : "))
 
-    QuestionParam = [QuestionName, Corner_X, Corner_Y, Width, Length, NumOfRows, NumOfCols, By_CorR, Alp_or_Num, StartFromIndex]
+    QuestionParam = [QuestionName, Corner_X, Corner_Y, Width, Length,
+                     NumOfRows, NumOfCols, By_CorR, Alp_or_Num, StartFromIndex]
 
     return QuestionParam
 
@@ -135,12 +138,12 @@ def Configure(InputImagePath=None, ResizeInputImageTo=None):
     # Open Config.txt file
     f = open(OMR_Path, "w")
     # Read and resize Input OMR Image
-    if InputImagePath == None:
+    if InputImagePath is None:
         Image = cv2.imread("InputImages/Blank2.jpeg")
     else:
         Image = cv2.imread(InputImagePath)
 
-    if ResizeInputImageTo == None:
+    if ResizeInputImageTo is None:
         Image = cv2.resize(Image, (600, 800))       # Default Value is set to (600, 800).
     else:
         Image = cv2.resize(Image, ResizeInputImageTo)
