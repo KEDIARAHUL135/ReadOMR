@@ -18,31 +18,53 @@ def click_and_crop(event, x, y, flags, param):
     # (x, y) coordinates and indicate that cropping is being
     # performed
     if event == cv2.EVENT_LBUTTONDOWN:
-        refPt = [(x, y)]
+        refPt = [[x, y]]
         cropping = True
 
     # check to see if the left mouse button was released
     elif event == cv2.EVENT_LBUTTONUP:
         # record the ending (x, y) coordinates and indicate that
         # the cropping operation is finished
-        refPt.append((x, y))
+        refPt.append([x, y])
         cropping = False
-        CroppedImage = Image[refPt[0][1]: (refPt[1][1] + 1), refPt[0][0]: (refPt[1][0] + 1)]
-        cv2.imshow("CroppedImage", CroppedImage)
+
+        while True:
+            CroppedImage = Image[refPt[0][1]: (refPt[1][1] + 1), refPt[0][0]: (refPt[1][0] + 1)]
+            cv2.imshow("CroppedImage", CroppedImage)
+            Action = cv2.waitKey(1)
+            if Action == 82:                        # top arrow
+                refPt[0][1] -= 1
+            elif Action == 81:                      # Left arrow
+                refPt[0][0] -= 1
+            elif Action == 84:                      # bottom arrow
+                refPt[1][1] += 1
+            elif Action == 83:                      # right arrow
+                refPt[1][0] += 1
+            elif Action == 119:                     # w
+                refPt[0][1] += 1
+            elif Action == 97:                      # a
+                refPt[0][0] += 1
+            elif Action == 115:                     # s
+                refPt[1][1] -= 1
+            elif Action == 100:                     # d
+                refPt[1][0] -= 1
+            elif Action == 32:                      # space bar
+                break
 
 
 def RectBoundingRegion():
-    print("In the OMR Sheet image, select the rectangular region which covers the area of the answer(options)\n "
-          "in the image for the question starting from the top left corner of the region ending on bottom right\n "
-          "corner of the region(drag mouse to expand the area).")
+    print("In the OMR Sheet image, select the rectangular region which covers the area of the answer(options)\n"
+          "in the image for the question starting from the top left corner of the region ending on bottom right\n"
+          "corner of the region(drag mouse to expand the area).\n"
+          "Press arrow keys to expand the cropped area and \"w, a, s, d\" to decrease the cropped area from the\n"
+          "top, left, bottom and right side respectively else press space bar to confirm region.\n"
+          "Press y to confirm cropped region.")
 
     cv2.namedWindow("OMR Image")
     cv2.setMouseCallback("OMR Image", click_and_crop)
     cv2.imshow("OMR Image", Image)
 
     while True:
-        # display the image and wait for a keypress
-        #cv2.imshow("RectBoundingRegion", CroppedImage)
         key = cv2.waitKey(1) & 0xFF
 
         # if the 'c' key is pressed, break from the loop
@@ -71,9 +93,39 @@ def AskQuestion():
     return QuestionParam
 
 
+def ConfirmQuestionParams(QuestionParam):
+    print()
+    print("Are the following details are correct for your question?")
+    print("Question Name                            : {}".format(QuestionParam[0]))
+    print("Cropped Region Details                   : Corner_X - {}, Corner_Y - {}, Width - {}, Length - {}"
+          .format(QuestionParam[1], QuestionParam[2], QuestionParam[3], QuestionParam[4]))
+    print("Number of Rows                           : {}".format(QuestionParam[5]))
+    print("Number of Cols                           : {}".format(QuestionParam[6]))
+    print("Each letter of answer is by column or row: {}".format(QuestionParam[7]))
+    print("Alphabetical(0) or numerical(1)          : {}".format(QuestionParam[8]))
+    print("Start from index                         : {}".format(QuestionParam[9]))
+
+    Confirmation = input("Enter Y/N if the details are correct/incorrect : ")
+
+    if Confirmation == "y" or Confirmation == "Y":
+        return True
+    else:
+        return False
+
+
 def RunCode():
     QuestionParam = AskQuestion()
+    while not ConfirmQuestionParams(QuestionParam):
+        QuestionParam = AskQuestion()
+
     f.write("{}\n".format(QuestionParam))
+
+    IfAddQ = input("Add another question(Y/N)? ")
+
+    if IfAddQ == "y" or IfAddQ == "Y":
+        RunCode()
+
+    return
 
 
 def Configure(InputImagePath=None, ResizeInputImageTo=None):
