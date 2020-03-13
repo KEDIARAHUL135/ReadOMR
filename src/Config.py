@@ -32,27 +32,31 @@ def click_and_crop(event, x, y, flags, param):
         cropping = False
 
         while True:
-            CroppedImage = Image[refPt[0][1]: (refPt[1][1] + 1), refPt[0][0]: (refPt[1][0] + 1)]
-            cv2.imshow("CroppedImage", CroppedImage)
-            Action = cv2.waitKey(1)
-            if Action == 82:                        # top arrow
-                refPt[0][1] -= 1
-            elif Action == 81:                      # Left arrow
-                refPt[0][0] -= 1
-            elif Action == 84:                      # bottom arrow
-                refPt[1][1] += 1
-            elif Action == 83:                      # right arrow
-                refPt[1][0] += 1
-            elif Action == 119:                     # w
-                refPt[0][1] += 1
-            elif Action == 97:                      # a
-                refPt[0][0] += 1
-            elif Action == 115:                     # s
-                refPt[1][1] -= 1
-            elif Action == 100:                     # d
-                refPt[1][0] -= 1
-            elif Action == 32:                      # space bar
-                break
+        	Height, Width = Image.shape[:2]
+        	if 0 <= refPt[0][0] < Width and 0 <= refPt[1][0] < Width and 0 <= refPt[0][1] < Height and 0 <= refPt[1][1] < Height:
+        		CroppedImage = Image[refPt[0][1]: (refPt[1][1] + 1), refPt[0][0]: (refPt[1][0] + 1)]
+        		cv2.imshow("CroppedImage", CroppedImage)
+        	else:
+        		continue
+        	Action = cv2.waitKey(1)
+        	if Action == 82 and refPt[0][1] > 0:   				# top arrow
+        		refPt[0][1] -= 1
+        	elif Action == 81 and refPt[0][0] > 0: 				# Left arrow
+        		refPt[0][0] -= 1
+        	elif Action == 84 and refPt[1][1] < (Height - 1):   # bottom arrow
+        		refPt[1][1] += 1
+        	elif Action == 83 and refPt[1][0] < (Width - 1):    # right arrow
+        		refPt[1][0] += 1
+        	elif Action == 119 and refPt[0][1] < refPt[1][1]:   # w
+        		refPt[0][1] += 1
+        	elif Action == 97 and refPt[0][0] < refPt[1][0]:    # a
+        		refPt[0][0] += 1
+        	elif Action == 115 and refPt[1][1] > refPt[0][1]:   # s
+        		refPt[1][1] -= 1
+        	elif Action == 100 and refPt[1][0] > refPt[0][0]:   # d
+        		refPt[1][0] -= 1
+        	elif Action == 32:                      			# space bar
+        		break
 
 
 def RectBoundingRegion():
@@ -118,7 +122,8 @@ def ConfirmQuestionParams(QuestionParam):
 def RunCode():
     QuestionParam = AskQuestion()
     while not ConfirmQuestionParams(QuestionParam):
-        QuestionParam = AskQuestion()
+    	print("\nRe-enter details of the above questions - \n")
+    	QuestionParam = AskQuestion()
 
     f.write("{}\n".format(QuestionParam))
 
@@ -130,8 +135,8 @@ def RunCode():
     return
 
 
-def Configure(InputImagePath, ResizeInputImageTo):
-    global Image, f, OMR_Path
+def Configure(InputImagePath, ShrinkImagePercent, SizeAfterCropping):
+    global Image, CroppedImage, f, OMR_Path
 
     OMR_Name = input("Enter OMR Sheet name : ")
     OMR_Path = "ConfigFiles/" + OMR_Name + "_Config.txt"
@@ -140,8 +145,13 @@ def Configure(InputImagePath, ResizeInputImageTo):
     f = open(OMR_Path, "w")
     # Read Input OMR Image
     Image = cv2.imread(InputImagePath)
+    #Image = cv2.resize(Image, (int(Image.shape[0]*ShrinkImagePercent), int(Image.shape[1]*ShrinkImagePercent)))
 
-    CropOMR(Image, ResizeInputImageTo)
+
+    CroppedImage = CropOMR(Image, SizeAfterCropping)
+    Image = CroppedImage.copy()
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     RunCode()
 

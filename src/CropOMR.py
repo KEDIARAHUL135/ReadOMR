@@ -24,7 +24,7 @@ from FindBoundingRect import FindBoundingBoxes
 #                 corner boxes.
 # Return        : InitialCorners, FinalCorners
 ################################################################################
-def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes):
+def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, NewSize):
     InitialCorners = np.float32([[(LeftGuidingBoxes[0][0] + LeftGuidingBoxes[0][2])//2,
                                   (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2],
                                  [(RightGuidingBoxes[0][0] + RightGuidingBoxes[0][2])//2,
@@ -37,9 +37,9 @@ def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes):
 
     # Final coordinates of 4 corner circles in another image
     FinalCorners = np.float32([[0., 0.],
-                               [(M.Size - 1), 0.],
-                               [(M.Size - 1), (M.Size - 1)],
-                               [0., (M.Size - 1)]])
+                               [(NewSize[0] - 1), 0.],
+                               [(NewSize[0] - 1), (NewSize[1] - 1)],
+                               [0., (NewSize[1] - 1)]])
 
     if M.EXPAND_INITIAL_POINTS:
         ExpandInitialCorners(InitialCorners)
@@ -88,6 +88,7 @@ def ProjectiveTransform(InputImage, InitialCorners, FinalCorners, NewSize):
     # Applying projective transform
     ProjectiveMatrix = cv2.getPerspectiveTransform(InitialCorners, FinalCorners)
     OutputImage = cv2.warpPerspective(InputImage, ProjectiveMatrix, NewSize)
+
     return OutputImage
 
 
@@ -102,10 +103,10 @@ def ProjectiveTransform(InputImage, InitialCorners, FinalCorners, NewSize):
 # Return        : CroppedOMR
 ################################################################################
 def CropOMR(InputImage, NewSize, SaveImage=False):
-    LeftGuidingBoxes, RightGuidingBoxes = FindBoundingBoxes(M.InputImagePath, NewSize)
+    LeftGuidingBoxes, RightGuidingBoxes = FindBoundingBoxes(InputImage, NewSize)
 
-    InitialCorners, FinalCorners = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes)
-
+    InitialCorners, FinalCorners = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, 
+                                                            RightGuidingBoxes, NewSize)
     # Applying Projective transformation.
     CroppedOMR = ProjectiveTransform(InputImage, InitialCorners, FinalCorners, NewSize)
 

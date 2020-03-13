@@ -227,7 +227,8 @@ def FindCornerBox(BoxCoordinates, Corner, IterateTill):
 
     while NumOfIterations < IterateTill:
         for Box in BoxCoordinates:
-            if Corner.Name == "TL":                                           # For top left corner
+            # For top left corner
+            if Corner.Name == "TL":                                           
                 if X == Box[Corner.CheckX] and Y >= Box[Corner.CheckX + 1]:
                     if CheckIfCornerBox(Box, BoxCoordinates):
                         CornerBoxFound = Box
@@ -239,7 +240,8 @@ def FindCornerBox(BoxCoordinates, Corner, IterateTill):
                         FoundCorner = 1
                         break
 
-            elif Corner.Name == "TR":                                         # For top right corner
+            # For top right corner
+            elif Corner.Name == "TR":                                         
                 if X == Box[Corner.CheckX] and Y >= Box[Corner.CheckX + 1]:
                     if CheckIfCornerBox(Box, BoxCoordinates):
                         CornerBoxFound = Box
@@ -251,7 +253,8 @@ def FindCornerBox(BoxCoordinates, Corner, IterateTill):
                         FoundCorner = 1
                         break
 
-            elif Corner.Name == "BR":                                         # For bottom right corner
+            # For bottom right corner
+            elif Corner.Name == "BR":                                         
                 if X == Box[Corner.CheckX] and Y <= Box[Corner.CheckX + 1]:
                     if CheckIfCornerBox(Box, BoxCoordinates):
                         CornerBoxFound = Box
@@ -263,7 +266,8 @@ def FindCornerBox(BoxCoordinates, Corner, IterateTill):
                         FoundCorner = 1
                         break
 
-            elif Corner.Name == "BL":                                         # For bottom left corner
+            # For bottom left corner
+            elif Corner.Name == "BL":                                         
                 if X == Box[Corner.CheckX] and Y <= Box[Corner.CheckX + 1]:
                     if CheckIfCornerBox(Box, BoxCoordinates):
                         CornerBoxFound = Box
@@ -435,7 +439,8 @@ def FindGuidingBoxes(MaskedImage):
 
         # For enlarging template image.
         for i in range(3):
-            TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] + i, TemplateImageSize[0] + i))
+            TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] + i, 
+                                                              TemplateImageSize[0] + i))
 
             BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
             RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
@@ -444,7 +449,8 @@ def FindGuidingBoxes(MaskedImage):
 
         # For diminishing template image.
         for i in range(3):
-            TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] - i, TemplateImageSize[0] - i))
+            TemplateImageResized = cv2.resize(TemplateImage, (TemplateImageSize[1] - i, 
+                                                              TemplateImageSize[0] - i))
             BoxCoordinates = TemplateMatching(MaskedImage, TemplateImageResized, Image)
 
             RetBoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
@@ -469,14 +475,15 @@ def FindGuidingBoxes(MaskedImage):
 def TrueGuidingBoxes(GuidingBoxesList, GuidingLineC1, GuidingLineC2):
     TrueGuidingBoxesList = []
 
-    # Now let (x1, y1) & (x2, y2) be the points of guiding line(coordinates of center of guiding corner boxes).
+    # Now let (x1, y1) & (x2, y2) be the points of guiding line(coordinates of center of 
+    # guiding corner boxes).
     # Slope of this line be "Slope" and its value is ((y2 - y1)/(x2 - x1)).
     # Let inverse of slope be "B", and its value is ((x2 - x1)/(y2 - y1)).
     # Let "A" be of value (x1 - y1*B).
     # Here "A" & "B" are constants.
     # Value of x-coordinate of a point on line at y-coordinate y3 is (X = A + y3*B).
-    # To check if the guiding box is truly a guiding box, the value X must lie between x3 and x4
-    # where (x3, y3) & (x4, y4) are coordinates for a rectangle of guiding box.
+    # To check if the guiding box is truly a guiding box, the value X must lie between 
+    # x3 and x4 where (x3, y3) & (x4, y4) are coordinates for a rectangle of guiding box.
 
     B = ((GuidingLineC2[0] - GuidingLineC1[0]) / (GuidingLineC2[1] - GuidingLineC1[1]))
     A = (GuidingLineC1[0] - (GuidingLineC1[1] * B))
@@ -515,8 +522,10 @@ def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxe
         else:
             RightGuidingBoxes.append(i)
 
-    LeftGuidingBoxes = TrueGuidingBoxes(LeftGuidingBoxes, GuidingCornerBoxesCenter[0], GuidingCornerBoxesCenter[3])
-    RightGuidingBoxes = TrueGuidingBoxes(RightGuidingBoxes, GuidingCornerBoxesCenter[1], GuidingCornerBoxesCenter[2])
+    LeftGuidingBoxes = TrueGuidingBoxes(LeftGuidingBoxes, GuidingCornerBoxesCenter[0], 
+                                        GuidingCornerBoxesCenter[3])
+    RightGuidingBoxes = TrueGuidingBoxes(RightGuidingBoxes, GuidingCornerBoxesCenter[1], 
+                                         GuidingCornerBoxesCenter[2])
 
     # Arranging from top to bottom line wise.
     LeftGuidingBoxes = sorted(LeftGuidingBoxes, key=lambda l: l[1])
@@ -555,7 +564,8 @@ def ShrinkTotalBox(BoxCoordinates, MaskedImage):
         XCoordinates = sorted(XCoordinates)
         YCoordinates = sorted(YCoordinates)
 
-        FinalBoxCoordinates.append([XCoordinates[0], YCoordinates[0], XCoordinates[-1], YCoordinates[-1]])
+        FinalBoxCoordinates.append([XCoordinates[0], YCoordinates[0], XCoordinates[-1], 
+                                    YCoordinates[-1]])
 
     return FinalBoxCoordinates
 
@@ -576,8 +586,8 @@ def RunCode():
     BoxCoordinates = FindGuidingBoxes(MaskedImage)
     GuidingCornerBoxes = FindGuidingCornerBoxes(BoxCoordinates, MaskedImage.shape)
     GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
-    LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(BoxCoordinates, Image.shape[1] // 2,
-                                                                   GuidingCornerBoxesCenter)
+    LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(BoxCoordinates, 
+                                    Image.shape[1] // 2, GuidingCornerBoxesCenter)
     LeftGuidingBoxes = ShrinkTotalBox(LeftGuidingBoxes, MaskedImage)
     RightGuidingBoxes = ShrinkTotalBox(RightGuidingBoxes, MaskedImage)
 
@@ -603,35 +613,20 @@ def RunCode():
 # Function      : FindBoundingBoxes
 # Parameter     : Image - Reads the input image of omr sheet.
 #                 InputImagePath - Path from which input image is to be read.
-#                 ResizeInputImageTo - Resize input image to this size.
+#                 ResizeImageTo - Resize input image to this size.
 #                 {Rest parameters are self explanatory}
 # Description   : This function read the input omr image and calls RunCode to
 #                 ultimately find the guiding boxes of left side and right side.
 # Return        : LeftGuidingBoxes, RightGuidingBoxes
 ################################################################################
-def FindBoundingBoxes(InputImagePath=None, ResizeInputImageTo=None):
+def FindBoundingBoxes(InputImage, ResizeImageTo):
     global Image
 
-    # Read and resize Input OMR Image
-    if InputImagePath is None:
-        Image = cv2.imread("InputImages/Blank1.jpg")
-    else:
-        Image = cv2.imread(InputImagePath)
-
-    if ResizeInputImageTo is None:
-        Image = cv2.resize(Image, (600, 800))       # Default Value is set to (600, 800).
-    else:
-        Image = cv2.resize(Image, ResizeInputImageTo)
+    Image = InputImage.copy()
+    #Image = cv2.resize(Image, ResizeImageTo)
 
     cv2.imshow("Input", Image)
-    #print(Image.shape)
+
     LeftGuidingBoxes, RightGuidingBoxes = RunCode()
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
     return LeftGuidingBoxes, RightGuidingBoxes
-
-
-# Call this function(FindBoundingBoxes) to run code present in this file with suitable parameters.
-FindBoundingBoxes()
