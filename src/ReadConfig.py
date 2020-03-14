@@ -6,11 +6,6 @@
 # Description   : This file is used to read the configure file of the OMR Sheet.
 ################################################################################
 
-
-import cv2
-import numpy as np 
-
-
 # Simple and self explanatory code. documentation not done.
 
 def SortQuestionParam(ReadLines):
