@@ -13,7 +13,7 @@
 import GetAnswers as GA
 
 # Size after cropping
-CroppedSize = (700, 800)
+RESIZE_TO = (600, 800)
 
 EXPAND_BY_PIXEL = 20
 # Threshold length of corner circle
@@ -29,8 +29,8 @@ MaxRadius = 20
 ThresholdImageAt = 75
 
 # Expand the total area of OMR Sheet after detecting corners
-EXPAND_INITIAL_POINTS = 1           # 1 for yes and 0 for no
-EXPAND_BY = (0, 0, 0, 0)            # Size in pixel by which to want to expand rectangle
+EXPAND_INITIAL_POINTS = 0           # 1 for yes and 0 for no
+EXPAND_BY = (0, 20, 0, 20)            # Size in pixel by which to want to expand rectangle
                                     # (It can be negative also to contract size).
                                     # First element to expand wrt left edge,
                                     # Second element to expand wrt top edge,

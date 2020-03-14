@@ -619,14 +619,16 @@ def RunCode():
 #                 ultimately find the guiding boxes of left side and right side.
 # Return        : LeftGuidingBoxes, RightGuidingBoxes
 ################################################################################
-def FindBoundingBoxes(InputImage, ResizeImageTo):
+def FindBoundingBoxes(InputImage):
     global Image
 
     Image = InputImage.copy()
-    #Image = cv2.resize(Image, ResizeImageTo)
-
+    
     cv2.imshow("Input", Image)
 
     LeftGuidingBoxes, RightGuidingBoxes = RunCode()
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     return LeftGuidingBoxes, RightGuidingBoxes

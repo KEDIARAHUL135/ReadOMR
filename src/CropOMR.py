@@ -24,7 +24,7 @@ from FindBoundingRect import FindBoundingBoxes
 #                 corner boxes.
 # Return        : InitialCorners, FinalCorners
 ################################################################################
-def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, CroppedSize):
+def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, Size):
     InitialCorners = np.float32([[(LeftGuidingBoxes[0][0] + LeftGuidingBoxes[0][2])//2,
                                   (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2 - M.EXPAND_BY_PIXEL],
                                  [(RightGuidingBoxes[0][0] + RightGuidingBoxes[0][2])//2,
@@ -32,14 +32,14 @@ def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, Crop
                                  [(RightGuidingBoxes[-1][0] + RightGuidingBoxes[-1][2])//2,
                                   (RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2 + M.EXPAND_BY_PIXEL],
                                  [(LeftGuidingBoxes[-1][0] + LeftGuidingBoxes[-1][2])//2,
-                                  (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2 + M.EXPAND_BY_PIXEL]])
+                                  (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2   + M.EXPAND_BY_PIXEL]])
 
 
     # Final coordinates of 4 corner circles in another image
     FinalCorners = np.float32([[0., 0.],
-                               [(CroppedSize[0] - 1), 0.],
-                               [(CroppedSize[0] - 1), (CroppedSize[1] - 1)],
-                               [0., (CroppedSize[1] - 1)]])
+                               [(Size[0] - 1), 0.],
+                               [(Size[0] - 1), (Size[1] - 1)],
+                               [0., (Size[1] - 1)]])
 
     if M.EXPAND_INITIAL_POINTS:
         ExpandInitialCorners(InitialCorners)
@@ -84,10 +84,12 @@ def ExpandInitialCorners(InitialCorners):
 #                 sheet so that then the answers can be found from OMR Sheet.
 # Return        : OutputImage
 ################################################################################
-def ProjectiveTransform(InputImage, InitialCorners, FinalCorners, CroppedSize):
+def ProjectiveTransform(InputImage, InitialCorners, FinalCorners):
+    Rows, Cols = InputImage.shape[:2]
+    
     # Applying projective transform
     ProjectiveMatrix = cv2.getPerspectiveTransform(InitialCorners, FinalCorners)
-    OutputImage = cv2.warpPerspective(InputImage, ProjectiveMatrix, CroppedSize)
+    OutputImage = cv2.warpPerspective(InputImage, ProjectiveMatrix, (Cols, Rows))
 
     return OutputImage
 
@@ -103,13 +105,13 @@ def ProjectiveTransform(InputImage, InitialCorners, FinalCorners, CroppedSize):
 # Return        : CroppedOMR
 ################################################################################
 def CropOMR(InputImage, SaveImage=False):
-    LeftGuidingBoxes, RightGuidingBoxes = FindBoundingBoxes(InputImage, M.CroppedSize)
+    LeftGuidingBoxes, RightGuidingBoxes = FindBoundingBoxes(InputImage)
 
     InitialCorners, FinalCorners = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, 
-                                                      RightGuidingBoxes, M.CroppedSize)
+                                                      RightGuidingBoxes, (InputImage.shape[1], InputImage.shape[0]))
     # Applying Projective transformation.
-    CroppedOMR = ProjectiveTransform(InputImage, InitialCorners, FinalCorners, M.CroppedSize)
-
+    CroppedOMR = ProjectiveTransform(InputImage, InitialCorners, FinalCorners)
+    CroppedOMR = cv2.resize(CroppedOMR, M.RESIZE_TO)
     cv2.imshow("CroppedOMR", CroppedOMR)
 
     if SaveImage:

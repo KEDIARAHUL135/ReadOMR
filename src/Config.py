@@ -145,7 +145,7 @@ def Configure(InputImagePath, ShrinkImagePercent):
     f = open(OMR_Path, "w")
     # Read Input OMR Image
     Image = cv2.imread(InputImagePath)
-    #Image = cv2.resize(Image, (int(Image.shape[0]*ShrinkImagePercent), int(Image.shape[1]*ShrinkImagePercent)))
+    Image = cv2.resize(Image, (int(Image.shape[1]*ShrinkImagePercent), int(Image.shape[0]*ShrinkImagePercent)))
 
 
     CroppedImage = CropOMR(Image)
