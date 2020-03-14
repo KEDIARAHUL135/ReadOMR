@@ -135,7 +135,7 @@ def RunCode():
     return
 
 
-def Configure(InputImagePath, ShrinkImagePercent, SizeAfterCropping):
+def Configure(InputImagePath, ShrinkImagePercent):
     global Image, CroppedImage, f, OMR_Path
 
     OMR_Name = input("Enter OMR Sheet name : ")
@@ -148,7 +148,7 @@ def Configure(InputImagePath, ShrinkImagePercent, SizeAfterCropping):
     #Image = cv2.resize(Image, (int(Image.shape[0]*ShrinkImagePercent), int(Image.shape[1]*ShrinkImagePercent)))
 
 
-    CroppedImage = CropOMR(Image, SizeAfterCropping)
+    CroppedImage = CropOMR(Image)
     Image = CroppedImage.copy()
     cv2.waitKey(0)
     cv2.destroyAllWindows()

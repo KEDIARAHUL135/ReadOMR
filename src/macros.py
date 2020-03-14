@@ -12,12 +12,8 @@
 
 import GetAnswers as GA
 
-# Input Image Path
-#InputImagePath = "InputImages/OMR1/Filled1.jpeg"
-
-# Size of OMR Sheet - square of length -> Size
-#Size = 800  # DONOT CHANGE THIS
-
+# Size after cropping
+CroppedSize = (700, 800)
 # Threshold length of corner circle
 ## It means that the corner circle must be present at what max distance from the boundary(Keep this value small).
 ThreshLengthCC = 90
