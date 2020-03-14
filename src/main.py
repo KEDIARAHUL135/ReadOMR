@@ -8,13 +8,10 @@
 
 import cv2
 import macros as M
+import GetAnswers as GA
 from CropOMR import CropOMR
+from ReadConfig import ReadConfig
 import json
-
-# Read Input and resize it
-InputImage = cv2.imread(M.InputImagePath)
-NewSize = (M.Size, M.Size)
-InputImage = cv2.resize(InputImage, NewSize)
 
 
 ################################################################################
@@ -61,14 +58,24 @@ def StoreInJSON(AnswerDict):
 #                 sheet and then the answers and found for each question.
 # Return        : AnswerDict
 ################################################################################
-def main():
-    CroppedOMR = CropOMR(InputImage, NewSize)
+def main(OMR_Name, InputImagePath):
+    AnswerDict = {}
+
+    # Read Input and resize it
+    InputImage = cv2.imread(InputImagePath)
+    
+    # Crop OMR wrt bounding boxes
+    CroppedOMR = CropOMR(InputImage)
+    
+    # Reading Config file
+    NumOfQuestion, QuestionParam = ReadConfig(OMR_Name)
+
+    for i in range(NumOfQuestion):
+        Q = GA.FindAnswer(QuestionParam[i][1], QuestionParam[i][2], QuestionParam[i][3], QuestionParam[i][4], QuestionParam[i][5], QuestionParam[i][6], QuestionParam[i][7], QuestionParam[i][8], QuestionParam[i][9])
+        AnswerDict[QuestionParam[i][0]] = Q.CropAnswer_MakeGrid_FindAnswer(CroppedOMR)
+
     # Extract different answers
-    AnswerDict = ExtractAnswers(CroppedOMR)
+    #AnswerDict = ExtractAnswers(CroppedOMR)
     print(AnswerDict)
 
     StoreInJSON(AnswerDict)
-
-
-main()
-cv2.waitKey(0)

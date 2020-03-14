@@ -1,12 +1,10 @@
 {
-    "Student's Name": "Q_GUK_JDCH_______________",
-    "Mobile Number": "83_914_466",
-    "Class": "10",
-    "Section": "CC",
-    "Answers 1-5": "AAACB",
-    "Answers 6-10": "_DDAA",
-    "Answers 11-15": "_BBDA",
-    "Answers 16-20": "_BBDA",
-    "Answers 21-25": "_DDDB",
-    "Answers 26-30": "_BBDA"
+    "StudentName": "SAIIMM_LFEJA______________________",
+    "A1_25": "ABCDADB_CB__CADDDDCCBAACC",
+    "Set": "C",
+    "A76_100": "AABBCCDDBACDBBCADBCBBAADB",
+    "A26_50": "BCADBCCADBCAD_B__BAACCDBB",
+    "RollNumber": "01596",
+    "Category": "1",
+    "A51_75": "BCDCBABCDDCBABCDCBABCDCBA"
 }
