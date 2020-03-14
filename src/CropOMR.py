@@ -26,13 +26,13 @@ from FindBoundingRect import FindBoundingBoxes
 ################################################################################
 def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, CroppedSize):
     InitialCorners = np.float32([[(LeftGuidingBoxes[0][0] + LeftGuidingBoxes[0][2])//2,
-                                  (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2],
+                                  (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2 - M.EXPAND_BY_PIXEL],
                                  [(RightGuidingBoxes[0][0] + RightGuidingBoxes[0][2])//2,
-                                  (RightGuidingBoxes[0][1] + RightGuidingBoxes[0][3])//2],
+                                  (RightGuidingBoxes[0][1] + RightGuidingBoxes[0][3])//2 - M.EXPAND_BY_PIXEL],
                                  [(RightGuidingBoxes[-1][0] + RightGuidingBoxes[-1][2])//2,
-                                  (RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2],
+                                  (RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2 + M.EXPAND_BY_PIXEL],
                                  [(LeftGuidingBoxes[-1][0] + LeftGuidingBoxes[-1][2])//2,
-                                  (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2]])
+                                  (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2 + M.EXPAND_BY_PIXEL]])
 
 
     # Final coordinates of 4 corner circles in another image
