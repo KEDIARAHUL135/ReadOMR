@@ -1,12 +1,12 @@
 {
-    "Student's Name": "RAHUL_KEDIA______________",
-    "Mobile Number": "8409250577",
+    "Student's Name": "Q_GUK_JDCH_______________",
+    "Mobile Number": "83_914_466",
     "Class": "10",
-    "Section": "C_",
-    "Answers 1-5": "ACBDA",
-    "Answers 6-10": "D_ABD",
-    "Answers 11-15": "BDAC_",
-    "Answers 16-20": "BDAAC",
-    "Answers 21-25": "DDBCA",
-    "Answers 26-30": "BDACC"
+    "Section": "CC",
+    "Answers 1-5": "AAACB",
+    "Answers 6-10": "_DDAA",
+    "Answers 11-15": "_BBDA",
+    "Answers 16-20": "_BBDA",
+    "Answers 21-25": "_DDDB",
+    "Answers 26-30": "_BBDA"
 }
