@@ -34,7 +34,7 @@ def MaskImage():
     UpperRange = np.array([255, 255, 100])
 
     MaskedImage = cv2.inRange(HSVImage, LowerRange, UpperRange)
-
+    
     MaskedBlurImage = cv2.GaussianBlur(MaskedImage, (3, 3), 0)
 
     cv2.imshow("Masked", MaskedBlurImage)
@@ -413,6 +413,36 @@ def ShrinkBoxWRTBoundary(BoxCoordinates, MaskedImage):
 
 
 ################################################################################
+# Function      : FindGuidingBoxes_ContourLogic
+# Parameter     : BoxCoordinates - It contains the coordinates of top left
+#                                   corner and bottom right corner of the
+#                                   guiding boxes as a list of list.
+#                 {Rest parameters are self explanatory}
+# Description   : This function finds the coordinates of guiding boxes.
+#                 It does it by drawing contours, making a rectangle around 
+#                 them and filtering them by their area and length of width 
+#                 and height.
+# Return        : return value from FilterBoxCoordinates
+################################################################################
+def FindGuidingBoxes_ContourLogic(MaskedImage):
+    BoxCoordinates = []
+
+    MaskedCopy = MaskedImage.copy()
+    Copy2 = Image.copy()
+    EdgedImage = cv2.Canny(MaskedCopy, 30, 200) 
+    Contours, Hierarchy = cv2.findContours(EdgedImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) 
+    for Contour in Contours:
+        (x, y, w, h) = cv2.boundingRect(Contour)
+        if w > h and w*h >= M.MIN_CONTOUR_AREA:
+            BoxCoordinates.append([x, y, x+w-1, y+h-1])
+            #cv2.rectangle(Copy2, (x, y), (x+w, y+h), (0, 0, 255), thickness=1)
+    cv2.imshow('Contours', Copy2) 
+    cv2.waitKey(1)
+    #BoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
+    return FilterBoxCoordinates(ShrinkBoxWRTBoundary(BoxCoordinates, MaskedImage))
+
+
+################################################################################
 # Function      : FindGuidingBoxes
 # Parameter     : FinalBoxCoordinates - Final list of boxes which donot
 #                                        have any intersecting boxes.
@@ -552,13 +582,14 @@ def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxe
         else:
             RightGuidingBoxes.append(i)
 
-    #LeftGuidingBoxes = TrueGuidingBoxes_InsideLineLogic(LeftGuidingBoxes, GuidingCornerBoxesCenter[0], 
-    #                                    GuidingCornerBoxesCenter[3])
-    #RightGuidingBoxes = TrueGuidingBoxes_InsideLineLogic(RightGuidingBoxes, GuidingCornerBoxesCenter[1], 
-    #                                     GuidingCornerBoxesCenter[2])
-
-    LeftGuidingBoxes = TrueGuidingBoxes_ScoreLogic(LeftGuidingBoxes)
-    RightGuidingBoxes = TrueGuidingBoxes_ScoreLogic(RightGuidingBoxes)
+    if M.INSIDLINE_OR_SCORE_LOGIC == 0:
+        LeftGuidingBoxes = TrueGuidingBoxes_InsideLineLogic(LeftGuidingBoxes, GuidingCornerBoxesCenter[0], 
+                                            GuidingCornerBoxesCenter[3])
+        RightGuidingBoxes = TrueGuidingBoxes_InsideLineLogic(RightGuidingBoxes, GuidingCornerBoxesCenter[1], 
+                                             GuidingCornerBoxesCenter[2])
+    else:
+        LeftGuidingBoxes = TrueGuidingBoxes_ScoreLogic(LeftGuidingBoxes)
+        RightGuidingBoxes = TrueGuidingBoxes_ScoreLogic(RightGuidingBoxes)
 
 
     # Arranging from top to bottom line wise.
@@ -617,7 +648,11 @@ def ShrinkTotalBox(BoxCoordinates, MaskedImage):
 def RunCode():
     MaskedImage = MaskImage()
 
-    BoxCoordinates = FindGuidingBoxes(MaskedImage)
+    if M.TEMPLATE_OR_CONTOUR_LOGIC == 0:
+        BoxCoordinates = FindGuidingBoxes(MaskedImage)
+    else:
+        BoxCoordinates = FindGuidingBoxes_ContourLogic(MaskedImage)
+
     GuidingCornerBoxes = FindGuidingCornerBoxes(BoxCoordinates, MaskedImage.shape)
     GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
     LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(BoxCoordinates, 
@@ -631,14 +666,18 @@ def RunCode():
         print("Guiding Boxes not found correctly.")
 
     # =====================Just for visualisation, to be deleted==========================
+    ImageCopy = Image.copy()
     for i in LeftGuidingBoxes:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
+        cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
     for i in RightGuidingBoxes:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
+        cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
     # ====================================================================================
     cv2.imshow("GuidingBoxes", Image)
+    cv2.imshow("FinalBoxes", ImageCopy)
 
     return LeftGuidingBoxes, RightGuidingBoxes
 
