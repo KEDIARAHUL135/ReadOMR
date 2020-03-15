@@ -16,6 +16,8 @@ import GetAnswers as GA
 RESIZE_TO = (600, 800)
 
 EXPAND_BY_PIXEL = 20
+
+MIN_SCORE_REQ = 5
 # Threshold length of corner circle
 ## It means that the corner circle must be present at what max distance from the boundary(Keep this value small).
 ThreshLengthCC = 90

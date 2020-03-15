@@ -13,6 +13,7 @@
 import numpy as np
 import cv2
 import os
+import macros as M
 
 
 ################################################################################
@@ -461,7 +462,36 @@ def FindGuidingBoxes(MaskedImage):
 
 
 ################################################################################
-# Function      : TrueGuidingBoxes
+# Function      : TrueGuidingBoxes_ScoreLogic
+# Parameter     : GuidingBoxesList - List of boxes from which true guiding
+#                                    boxes are to be founded.
+#                 TrueGuidingBoxesList - List of true guiding boxes found.
+#                 Scores - Holds the score of respective boxes.
+#                 {Rest parameters are explained.}
+# Description   : This function filters the true guiding boxes from the list
+#                 of boxes provided by using logic of scores.
+# Return        : TrueGuidingBoxesList
+################################################################################
+def TrueGuidingBoxes_ScoreLogic(GuidingBoxesList):
+    TrueGuidingBoxesList = []
+    Scores = []
+    for BoxToBeScored in GuidingBoxesList:
+        Score = 0
+        for Box in GuidingBoxesList:
+            if Box[2] > BoxToBeScored[0] and Box[0] < BoxToBeScored[2]:
+                Score += 1
+
+        Scores.append(Score)
+
+    for i in range(len(Scores)):
+        if Scores[i] >= M.MIN_SCORE_REQ:
+            TrueGuidingBoxesList.append(GuidingBoxesList[i])
+
+    return TrueGuidingBoxesList
+
+
+################################################################################
+# Function      : TrueGuidingBoxes_InsideLineLogic
 # Parameter     : GuidingBoxesList - List of boxes from which true guiding
 #                                    boxes are to be founded.
 #                 GuidingLineC1, GuidingLineC2 - Coordinates of centre of
@@ -469,10 +499,10 @@ def FindGuidingBoxes(MaskedImage):
 #                 TrueGuidingBoxesList - List of true guiding boxes found.
 #                 {Rest parameters are explained.}
 # Description   : This function filters the true guiding boxes from the list
-#                 of boxes provided.
+#                 of boxes provided by using logic of boxes intersected by lines.
 # Return        : TrueGuidingBoxesList
 ################################################################################
-def TrueGuidingBoxes(GuidingBoxesList, GuidingLineC1, GuidingLineC2):
+def TrueGuidingBoxes_InsideLineLogic(GuidingBoxesList, GuidingLineC1, GuidingLineC2):
     TrueGuidingBoxesList = []
 
     # Now let (x1, y1) & (x2, y2) be the points of guiding line(coordinates of center of 
@@ -522,15 +552,19 @@ def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxe
         else:
             RightGuidingBoxes.append(i)
 
-    LeftGuidingBoxes = TrueGuidingBoxes(LeftGuidingBoxes, GuidingCornerBoxesCenter[0], 
-                                        GuidingCornerBoxesCenter[3])
-    RightGuidingBoxes = TrueGuidingBoxes(RightGuidingBoxes, GuidingCornerBoxesCenter[1], 
-                                         GuidingCornerBoxesCenter[2])
+    #LeftGuidingBoxes = TrueGuidingBoxes_InsideLineLogic(LeftGuidingBoxes, GuidingCornerBoxesCenter[0], 
+    #                                    GuidingCornerBoxesCenter[3])
+    #RightGuidingBoxes = TrueGuidingBoxes_InsideLineLogic(RightGuidingBoxes, GuidingCornerBoxesCenter[1], 
+    #                                     GuidingCornerBoxesCenter[2])
+
+    LeftGuidingBoxes = TrueGuidingBoxes_ScoreLogic(LeftGuidingBoxes)
+    RightGuidingBoxes = TrueGuidingBoxes_ScoreLogic(RightGuidingBoxes)
+
 
     # Arranging from top to bottom line wise.
     LeftGuidingBoxes = sorted(LeftGuidingBoxes, key=lambda l: l[1])
     RightGuidingBoxes = sorted(RightGuidingBoxes, key=lambda l: l[1])
-
+    
     return LeftGuidingBoxes, RightGuidingBoxes
 
 
