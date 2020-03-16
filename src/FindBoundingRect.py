@@ -31,7 +31,7 @@ def MaskImage():
     HSVImage = cv2.cvtColor(Image, cv2.COLOR_BGR2HSV)
 
     LowerRange = np.array([0, 0, 0])
-    UpperRange = np.array([255, 255, 100])
+    UpperRange = np.array([255, 255, 130])
 
     MaskedImage = cv2.inRange(HSVImage, LowerRange, UpperRange)
     
@@ -329,24 +329,24 @@ def FindGuidingCornerBoxes(BoxCoordinates, ImageShape):
 
 ################################################################################
 # Function      : CenterOfBoxes
-# Parameter     : GuidingBoxesCenter - It contains the coordinates of centre of
+# Parameter     : BoxesCenter - It contains the coordinates of centre of
 #                                   guiding/corner boxes found.
-#                 GuidingBoxes - It contains coordinates of top left
+#                 Boxes - It contains coordinates of top left
 #                                corner and bottom right corner of the four
 #                                corner boxes as a list of list in the
 #                                clockwise fashion starting from top left
 #                                box.
 # Description   : This function finds the centre of 4 corner box found.
-# Return        : GuidingBoxesCenter
+# Return        : BoxesCenter
 ################################################################################
-def CenterOfBoxes(GuidingBoxes):
-    GuidingBoxesCenter = []
+def CenterOfBoxes(Boxes):
+    BoxesCenter = []
 
-    for i in GuidingBoxes:
+    for i in Boxes:
         Center = ((i[0] + i[2]) // 2, (i[1] + i[3]) // 2)
-        GuidingBoxesCenter.append(Center)
+        BoxesCenter.append(Center)
 
-    return GuidingBoxesCenter
+    return BoxesCenter
 
 
 ################################################################################
@@ -491,23 +491,70 @@ def FindGuidingBoxes(MaskedImage):
     return FilterBoxCoordinates(ShrinkBoxWRTBoundary(FinalBoxCoordinates, MaskedImage))
 
 
+def FilterGuidingBoxes_RansacLogic(BoxesList):
+    CenterOfBoxesList = CenterOfBoxes(BoxesList)
+    GuidingBoxesList = []
+    CenterInliersList = []
+    LengthOfBoxesList = len(CenterOfBoxesList)
+
+    # Finding inliers wrt center coordinates.
+    for i in range(LengthOfBoxesList):
+        for j in range((i+1), LengthOfBoxesList):
+            InliersList = [i, j]
+            InlierCount = 0
+            # Now let (x1, y1) & (x2, y2) be the points of line(coordinates of center of boxes).
+            # Slope of this line be "Slope" and its value is ((y2 - y1)/(x2 - x1)).
+            # Let inverse of slope be "B", and its value is ((x2 - x1)/(y2 - y1)).
+            # Let "A" be of value (x1 - y1*B).
+            # Here "A" & "B" are constants.
+            # Value of x-coordinate of a point on line at y-coordinate y3 is (X = A + y3*B).
+            # To check if the center  is inlier, the value (X - x-coordinate of center) must lie between 
+            # +-(M.MAX_INLIER_DIST).
+
+            if (CenterOfBoxesList[j][1] - CenterOfBoxesList[i][1]) == 0:
+                B = 0
+            else:
+                B = ((CenterOfBoxesList[j][0] - CenterOfBoxesList[i][0]) / (CenterOfBoxesList[j][1] - CenterOfBoxesList[i][1]))
+            A = (CenterOfBoxesList[i][0] - (CenterOfBoxesList[i][1] * B))
+
+            for k in range(LengthOfBoxesList):
+                X = (A + (CenterOfBoxesList[k][1] * B))
+                if (-(M.MAX_INLIER_DIST)) <= (X - CenterOfBoxesList[k][0]) <= M.MAX_INLIER_DIST:
+                    InliersList.append(k)
+                    InlierCount += 1
+            
+            InliersList.append(InlierCount)
+            CenterInliersList.append(InliersList)
+
+    # Finding list with max inlier details. 
+    MaxInlierList = [0]
+    for InlierList in CenterInliersList:
+        if InlierList[-1] > MaxInlierList[-1]:
+            MaxInlierList = InlierList
+
+    for i in range(3, (len(MaxInlierList) - 1)):
+        GuidingBoxesList.append(BoxesList[i])
+
+    return GuidingBoxesList
+
+
 ################################################################################
-# Function      : TrueGuidingBoxes_ScoreLogic
-# Parameter     : GuidingBoxesList - List of boxes from which true guiding
+# Function      : FilterGuidingBoxes_ScoreLogic
+# Parameter     : BoxesList - List of boxes from which true guiding
 #                                    boxes are to be founded.
-#                 TrueGuidingBoxesList - List of true guiding boxes found.
+#                 GuidingBoxesList - List of true guiding boxes found.
 #                 Scores - Holds the score of respective boxes.
 #                 {Rest parameters are explained.}
-# Description   : This function filters the true guiding boxes from the list
+# Description   : This function filters the guiding boxes from the list
 #                 of boxes provided by using logic of scores.
-# Return        : TrueGuidingBoxesList
+# Return        : GuidingBoxesList
 ################################################################################
-def TrueGuidingBoxes_ScoreLogic(GuidingBoxesList):
-    TrueGuidingBoxesList = []
+def FilterGuidingBoxes_ScoreLogic(BoxesList):
+    GuidingBoxesList = []
     Scores = []
-    for BoxToBeScored in GuidingBoxesList:
+    for BoxToBeScored in BoxesList:
         Score = 0
-        for Box in GuidingBoxesList:
+        for Box in BoxesList:
             if Box[2] > BoxToBeScored[0] and Box[0] < BoxToBeScored[2]:
                 Score += 1
 
@@ -515,25 +562,25 @@ def TrueGuidingBoxes_ScoreLogic(GuidingBoxesList):
 
     for i in range(len(Scores)):
         if Scores[i] >= M.MIN_SCORE_REQ:
-            TrueGuidingBoxesList.append(GuidingBoxesList[i])
+            GuidingBoxesList.append(BoxesList[i])
 
-    return TrueGuidingBoxesList
+    return GuidingBoxesList
 
 
 ################################################################################
-# Function      : TrueGuidingBoxes_InsideLineLogic
-# Parameter     : GuidingBoxesList - List of boxes from which true guiding
+# Function      : FilterGuidingBoxes_InsideLineLogic
+# Parameter     : BoxesList - List of boxes from which true guiding
 #                                    boxes are to be founded.
 #                 GuidingLineC1, GuidingLineC2 - Coordinates of centre of
 #                                                guiding corner boxes.
-#                 TrueGuidingBoxesList - List of true guiding boxes found.
+#                 GuidingBoxesList - List of true guiding boxes found.
 #                 {Rest parameters are explained.}
-# Description   : This function filters the true guiding boxes from the list
+# Description   : This function filters the guiding boxes from the list
 #                 of boxes provided by using logic of boxes intersected by lines.
-# Return        : TrueGuidingBoxesList
+# Return        : GuidingBoxesList
 ################################################################################
-def TrueGuidingBoxes_InsideLineLogic(GuidingBoxesList, GuidingLineC1, GuidingLineC2):
-    TrueGuidingBoxesList = []
+def FilterGuidingBoxes_InsideLineLogic(BoxesList, GuidingLineC1, GuidingLineC2):
+    GuidingBoxesList = []
 
     # Now let (x1, y1) & (x2, y2) be the points of guiding line(coordinates of center of 
     # guiding corner boxes).
@@ -548,18 +595,18 @@ def TrueGuidingBoxes_InsideLineLogic(GuidingBoxesList, GuidingLineC1, GuidingLin
     B = ((GuidingLineC2[0] - GuidingLineC1[0]) / (GuidingLineC2[1] - GuidingLineC1[1]))
     A = (GuidingLineC1[0] - (GuidingLineC1[1] * B))
 
-    for Box in GuidingBoxesList:
+    for Box in BoxesList:
         X = (A + (Box[1] * B))
         if Box[0] <= X <= Box[2]:
-            TrueGuidingBoxesList.append(Box)
+            GuidingBoxesList.append(Box)
 
-    return TrueGuidingBoxesList
+    return GuidingBoxesList
 
 
 ################################################################################
 # Function      : SplitAndFindGuidingBoxes
 # Parameter     : BoxCoordinates - List of all the boxes found.
-#                 LeftGuidingBoxes, RightGuidingBoxes - List of left and right
+#                 LeftBoxes, RightBoxes - List of left and right
 #                       guiding boxes found.(First all the boxes are divided to
 #                       left and right and the true guiding boxes are found.)
 #                 HalfWidthOfImage - Half of width of image(From which left and
@@ -570,27 +617,30 @@ def TrueGuidingBoxes_InsideLineLogic(GuidingBoxesList, GuidingLineC1, GuidingLin
 # Return        : LeftGuidingBoxes, RightGuidingBoxes
 ################################################################################
 def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxesCenter):
-    LeftGuidingBoxes = []
-    RightGuidingBoxes = []
+    LeftBoxes = []
+    RightBoxes = []
 
     BoxCoordinates = sorted(BoxCoordinates, key=lambda l: l[0])
 
     # Filter all boxes to left and right
     for i in BoxCoordinates:
         if i[0] <= HalfWidthOfImage:
-            LeftGuidingBoxes.append(i)
+            LeftBoxes.append(i)
         else:
-            RightGuidingBoxes.append(i)
+            RightBoxes.append(i)
 
-    if M.INSIDLINE_OR_SCORE_LOGIC == 0:
-        LeftGuidingBoxes = TrueGuidingBoxes_InsideLineLogic(LeftGuidingBoxes, GuidingCornerBoxesCenter[0], 
+    if M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 1:
+        LeftGuidingBoxes = FilterGuidingBoxes_InsideLineLogic(LeftBoxes, GuidingCornerBoxesCenter[0], 
                                             GuidingCornerBoxesCenter[3])
-        RightGuidingBoxes = TrueGuidingBoxes_InsideLineLogic(RightGuidingBoxes, GuidingCornerBoxesCenter[1], 
+        RightGuidingBoxes = FilterGuidingBoxes_InsideLineLogic(RightBoxes, GuidingCornerBoxesCenter[1], 
                                              GuidingCornerBoxesCenter[2])
-    else:
-        LeftGuidingBoxes = TrueGuidingBoxes_ScoreLogic(LeftGuidingBoxes)
-        RightGuidingBoxes = TrueGuidingBoxes_ScoreLogic(RightGuidingBoxes)
-
+    elif M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 2:
+        LeftGuidingBoxes = FilterGuidingBoxes_ScoreLogic(LeftBoxes)
+        RightGuidingBoxes = FilterGuidingBoxes_ScoreLogic(RightBoxes)
+    elif M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 3:
+        LeftGuidingBoxes = FilterGuidingBoxes_RansacLogic(LeftBoxes)
+        RightGuidingBoxes = FilterGuidingBoxes_RansacLogic(RightBoxes)    
+    
 
     # Arranging from top to bottom line wise.
     LeftGuidingBoxes = sorted(LeftGuidingBoxes, key=lambda l: l[1])
@@ -660,6 +710,10 @@ def RunCode():
     LeftGuidingBoxes = ShrinkTotalBox(LeftGuidingBoxes, MaskedImage)
     RightGuidingBoxes = ShrinkTotalBox(RightGuidingBoxes, MaskedImage)
 
+    GuidingCornerBoxes = [LeftGuidingBoxes[0], RightGuidingBoxes[0], RightGuidingBoxes[-1], LeftGuidingBoxes[-1]]
+    GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
+    
+
     if len(LeftGuidingBoxes) == len(RightGuidingBoxes):
         print("Yes, program working correctly")
     else:
@@ -669,15 +723,15 @@ def RunCode():
     ImageCopy = Image.copy()
     for i in LeftGuidingBoxes:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
-        cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
     for i in RightGuidingBoxes:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
-        cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
+    for i in BoxCoordinates:
+        cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 2)
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
     # ====================================================================================
     cv2.imshow("GuidingBoxes", Image)
-    cv2.imshow("FinalBoxes", ImageCopy)
+    cv2.imshow("AllBoxes", ImageCopy)
 
     return LeftGuidingBoxes, RightGuidingBoxes
 

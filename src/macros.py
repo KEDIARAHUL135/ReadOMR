@@ -22,7 +22,9 @@ MIN_SCORE_REQ = 8
 MIN_CONTOUR_AREA = 12
 
 TEMPLATE_OR_CONTOUR_LOGIC = 1   # 0 for templatelogic and 1 for contour logic
-INSIDLINE_OR_SCORE_LOGIC = 1    # 0 for inside line logic and 1 for score logic
+INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC = 3    # 1 for inside line logic and 2 for score logic and 3 for ransac logic
+
+MAX_INLIER_DIST = 4
 
 # Threshold length of corner circle
 ## It means that the corner circle must be present at what max distance from the boundary(Keep this value small).
