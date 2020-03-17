@@ -519,6 +519,16 @@ def FindGuidingBoxes(MaskedImage):
     return FilterBoxCoordinates(ShrinkBoxWRTBoundary(FinalBoxCoordinates, MaskedImage))
 
 
+################################################################################
+# Function      : FilterGuidingBoxes_RansacLogic
+# Parameter     : BoxesList - List of boxes from which true guiding
+#                                    boxes are to be founded.
+#                 GuidingBoxesList - List of true guiding boxes found.
+#                 {Rest parameters are explained.}
+# Description   : This function filters the guiding boxes from the list
+#                 of boxes provided by using logic ransac.
+# Return        : GuidingBoxesList
+################################################################################
 def FilterGuidingBoxes_RansacLogic(BoxesList):
     CenterOfBoxesList = CenterOfBoxes(BoxesList)
     GuidingBoxesList = []
@@ -716,6 +726,49 @@ def ShrinkTotalBox(BoxCoordinates, MaskedImage):
 
 
 ################################################################################
+# Function      : RANSAC_OnArea
+# Parameter     : MaskedImage - Contains the image masked for black colour.
+#                 BoxCoordinates - Final list of boxes which donot have any
+#                         intersecting boxes(These are not actual guiding boxes).
+#                 {Rest parameters are self explanatory}
+# Description   : This function applies the ransac motivated algo on the areas 
+#                 of boxes to find the most related boxes of required number.
+# Return        : FinalBoxesList - If required number of boxes are found
+#                 BoxesList - If required number of boxes are not found.
+################################################################################
+def RANSAC_OnArea(BoxesList, LengthReq, ImageArea):
+    FinalBoxesList = []
+    AreaOfBoxesList = []
+    DifferenceInArea = 0
+    for Box in BoxesList:
+        AreaOfBoxesList.append((Box[0] - Box[2])*(Box[1] - Box[3]))
+    
+
+    while DifferenceInArea <= ImageArea:
+        TotalInliersList = []
+        for i in range(len(AreaOfBoxesList)):
+            InlierCount = 0
+            InlierList = []
+            for j in range(len(AreaOfBoxesList)):
+                if (-(DifferenceInArea)) <= (AreaOfBoxesList[i] - AreaOfBoxesList[j]) <= DifferenceInArea:
+                    InlierList.append(j)
+                    InlierCount += 1
+            InlierList.append(InlierCount)
+            TotalInliersList.append(InlierList)
+
+        for InlierList in TotalInliersList:
+            if InlierList[-1] == LengthReq:
+                print("Found all inliers wrt area.")
+                for i in range(len(InlierList)-1):
+                    FinalBoxesList.append(BoxesList[InlierList[i]])
+                return FinalBoxesList
+        DifferenceInArea += 1
+
+    print("Cannot find inliers wrt area.")
+    return BoxesList
+
+
+################################################################################
 # Function      : RunCode
 # Parameter     : MaskedImage - Contains the image masked for black colour.
 #                 BoxCoordinates - Final list of boxes which donot have any
@@ -740,24 +793,27 @@ def RunCode():
     LeftGuidingBoxes = ShrinkTotalBox(LeftGuidingBoxes, MaskedImage)
     RightGuidingBoxes = ShrinkTotalBox(RightGuidingBoxes, MaskedImage)
 
+    LenOfLeftGB = len(LeftGuidingBoxes)
+    LenOfRightGB = len(RightGuidingBoxes)
+    if LenOfLeftGB == LenOfRightGB:
+        print("Yes, program working correctly")
+    else:
+        print("Guiding Boxes not found correctly.")
+        print("Appyling RANSAC on areas.")
+        if LenOfLeftGB > LenOfRightGB:
+            LeftGuidingBoxes = RANSAC_OnArea(LeftGuidingBoxes, LenOfRightGB, Image.shape[0]*Image.shape[0])
+        else:
+            RightGuidingBoxes = RANSAC_OnArea(RightGuidingBoxes, LenOfLeftGB, Image.shape[0]*Image.shape[0])
+
     if M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 3:
         GuidingCornerBoxes = [LeftGuidingBoxes[0], RightGuidingBoxes[0], RightGuidingBoxes[-1], LeftGuidingBoxes[-1]]
         GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
     
-
-    if len(LeftGuidingBoxes) == len(RightGuidingBoxes):
-        print("Yes, program working correctly")
-    else:
-        print("Guiding Boxes not found correctly.")
-
     # =====================Just for visualisation, to be deleted==========================
     ImageCopy = Image.copy()
     for i in LeftGuidingBoxes:
-        print((i[0] - i[2])*(i[1] - i[3]))
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
-    print("\n\n\n")
     for i in RightGuidingBoxes:
-        print((i[0] - i[2])*(i[1] - i[3]))
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
     for i in BoxCoordinates:
         cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 1)
