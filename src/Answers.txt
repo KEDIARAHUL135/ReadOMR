@@ -1,7 +1,10 @@
 {
-    "A1_25": "___A_____D__B__CC________",
-    "RollNumber": "11144",
-    "StdName": "______BBBB__BBBBBBBBBB_B_________K",
-    "Category": "4",
-    "Set": "B"
+    "A51_75": "________B_DD__BA___D_____",
+    "A1_25": "____AACD_AA_C_DCC__DAA___",
+    "A76_100": "______ACAA___ACCCA___AACA",
+    "RollNumber": "00022",
+    "StudentName": "_WBKK_PP_OGGFLBB__________________",
+    "Set": "_",
+    "A26_50": "____DD_C_DD__C_DD_C__DD__",
+    "Category": "_"
 }

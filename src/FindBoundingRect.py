@@ -437,7 +437,7 @@ def ShrinkBoxWRTBoundary(BoxCoordinates, MaskedImage):
 ################################################################################
 def FindGuidingBoxes_ContourLogic(MaskedImage):
     BoxCoordinates = []
-
+    Height, Width = MaskedImage.shape[:2]
     MaskedCopy = MaskedImage.copy()
     Copy2 = Image.copy()
     EdgedImage = cv2.Canny(MaskedCopy, 30, 200) 
@@ -447,18 +447,27 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
         if w > h and w*h >= M.MIN_CONTOUR_AREA and w*h <= M.MAX_CONTOUR_AREA:
             # Expanding box wrt boundaries till total block
             x1, y1, x2, y2 = x, y, x+w-1, y+h-1
+            print("{}, {}, {}, {}".format(x1, y1, x2, y2))
             while 1:
+                ValueChanged = 0
+                print("{}, {}, {}, {}".format(x1, y1, x2, y2))
                 # Check Boundary of box for all black.
                 Flag, BoundaryWithWhite = CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage)
                 if not Flag:
-                    if BoundaryWithWhite[0] == 1:
+                    if BoundaryWithWhite[0] == 1 and y1 > 0:
                         y1 -= 1
-                    if BoundaryWithWhite[1] == 1:
+                        ValueChanged = 1
+                    if BoundaryWithWhite[1] == 1 and x2 < (Width - 2):
                         x2 += 1
-                    if BoundaryWithWhite[2] == 1:
+                        ValueChanged = 1
+                    if BoundaryWithWhite[2] == 1 and y2 < (Height -2):
                         y2 += 1
-                    if BoundaryWithWhite[3] == 1:
+                        ValueChanged = 1
+                    if BoundaryWithWhite[3] == 1 and x1 > 0:
                         x1 -= 1
+                        ValueChanged = 1
+                    if ValueChanged == 0:
+                        break
                 else:
                     break
             
