@@ -512,7 +512,7 @@ def FilterGuidingBoxes_RansacLogic(BoxesList):
             # +-(M.MAX_INLIER_DIST).
 
             if (CenterOfBoxesList[j][1] - CenterOfBoxesList[i][1]) == 0:
-                B = 0
+                B = 100000
             else:
                 B = ((CenterOfBoxesList[j][0] - CenterOfBoxesList[i][0]) / (CenterOfBoxesList[j][1] - CenterOfBoxesList[i][1]))
             A = (CenterOfBoxesList[i][0] - (CenterOfBoxesList[i][1] * B))
@@ -529,11 +529,13 @@ def FilterGuidingBoxes_RansacLogic(BoxesList):
     # Finding list with max inlier details. 
     MaxInlierList = [0]
     for InlierList in CenterInliersList:
-        if InlierList[-1] > MaxInlierList[-1]:
+        if InlierList[-1] >= MaxInlierList[-1]:
             MaxInlierList = InlierList
+    
+    print(MaxInlierList)
 
-    for i in range(3, (len(MaxInlierList) - 1)):
-        GuidingBoxesList.append(BoxesList[i])
+    for i in range(2, (len(MaxInlierList) - 1)):
+        GuidingBoxesList.append(BoxesList[MaxInlierList[i]])
 
     return GuidingBoxesList
 
@@ -710,8 +712,9 @@ def RunCode():
     LeftGuidingBoxes = ShrinkTotalBox(LeftGuidingBoxes, MaskedImage)
     RightGuidingBoxes = ShrinkTotalBox(RightGuidingBoxes, MaskedImage)
 
-    GuidingCornerBoxes = [LeftGuidingBoxes[0], RightGuidingBoxes[0], RightGuidingBoxes[-1], LeftGuidingBoxes[-1]]
-    GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
+    if M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 3:
+        GuidingCornerBoxes = [LeftGuidingBoxes[0], RightGuidingBoxes[0], RightGuidingBoxes[-1], LeftGuidingBoxes[-1]]
+        GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
     
 
     if len(LeftGuidingBoxes) == len(RightGuidingBoxes):
@@ -726,7 +729,7 @@ def RunCode():
     for i in RightGuidingBoxes:
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
     for i in BoxCoordinates:
-        cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 2)
+        cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 1)
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
     # ====================================================================================
