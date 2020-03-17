@@ -14,7 +14,9 @@ import numpy as np
 import cv2
 import os
 import macros as M
+import time as t
 
+t1 = t.time()
 
 ################################################################################
 # Function      : MaskImage
@@ -447,12 +449,19 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
         if w > h and w*h >= M.MIN_CONTOUR_AREA and w*h <= M.MAX_CONTOUR_AREA:
             # Expanding box wrt boundaries till total block
             x1, y1, x2, y2 = x, y, x+w-1, y+h-1
-            print("{}, {}, {}, {}".format(x1, y1, x2, y2))
+            #print("{}, {}, {}, {}".format(x1, y1, x2, y2))
             while 1:
                 ValueChanged = 0
                 print("{}, {}, {}, {}".format(x1, y1, x2, y2))
+                Copy3 = Copy2.copy()
+                cv2.rectangle(Copy3, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
+                cv2.imshow("Running code on contour", Copy3)
+                cv2.waitKey(5)
                 # Check Boundary of box for all black.
                 Flag, BoundaryWithWhite = CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage)
+                Area = ((x2 - x1)*(y2 - y1))
+                if Area >= M.MAX_CONTOUR_AREA:
+                    break
                 if not Flag:
                     if BoundaryWithWhite[0] == 1 and y1 > 0:
                         y1 -= 1
@@ -852,7 +861,9 @@ def FindBoundingBoxes(InputImage):
     
     LeftGuidingBoxes, RightGuidingBoxes = RunCode()
 
-    cv2.waitKey(0)
+    cv2.waitKey(1)
     cv2.destroyAllWindows()
 
+    t2 = t.time()
+    print("Time taken = {}".format(t2-t1))
     return LeftGuidingBoxes, RightGuidingBoxes
