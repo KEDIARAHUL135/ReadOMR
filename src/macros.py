@@ -13,18 +13,19 @@
 import GetAnswers as GA
 
 # Size after cropping
-RESIZE_TO = (600, 800)
+RESIZE_TO = (750, 950)
 
 EXPAND_BY_PIXEL = 20
 
 MIN_SCORE_REQ = 8
 
 MIN_CONTOUR_AREA = 12
+MAX_CONTOUR_AREA = 200
 
 TEMPLATE_OR_CONTOUR_LOGIC = 1   # 0 for templatelogic and 1 for contour logic
 INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC = 3    # 1 for inside line logic and 2 for score logic and 3 for ransac logic
 
-MAX_INLIER_DIST = 4
+MAX_INLIER_DIST = 5
 
 # Threshold length of corner circle
 ## It means that the corner circle must be present at what max distance from the boundary(Keep this value small).

@@ -63,7 +63,7 @@ def main(OMR_Name, InputImagePath):
 
     # Read Input and resize it
     InputImage = cv2.imread(InputImagePath)
-    InputImage = cv2.resize(InputImage, (750, 950))
+    InputImage = cv2.resize(InputImage, M.RESIZE_TO)
     
     # Crop OMR wrt bounding boxes
     CroppedOMR = CropOMR(InputImage)

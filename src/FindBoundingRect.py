@@ -31,7 +31,7 @@ def MaskImage():
     HSVImage = cv2.cvtColor(Image, cv2.COLOR_BGR2HSV)
 
     LowerRange = np.array([0, 0, 0])
-    UpperRange = np.array([255, 255, 130])
+    UpperRange = np.array([255, 255, 150])
 
     MaskedImage = cv2.inRange(HSVImage, LowerRange, UpperRange)
     
@@ -361,20 +361,30 @@ def CenterOfBoxes(Boxes):
 ################################################################################
 def CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage):
     FoundWhite = 0
+    BoundaryWithWhite = [0, 0, 0, 0]            # Flag for boundary with whte pixel [Top, Right, Bottom, Left]
 
     for i in range(x1, (x2+1)):                     # Moving right
-        if MaskedImage[y1][i] != 0 or MaskedImage[y2][i] != 0:
+        if MaskedImage[y1][i] != 0:                 # Checking top boundary
             FoundWhite = 1
+            BoundaryWithWhite[0] = 1
+
+        if MaskedImage[y2][i] != 0:                 # Checking bottom boundary
+            FoundWhite = 1
+            BoundaryWithWhite[2] = 1
+
+    for j in range(y1, (y2+1)):                     # Moving down
+        if MaskedImage[j][x1] != 0:                 # Checking left boundary
+            FoundWhite = 1
+            BoundaryWithWhite[3] = 1
+
+        if MaskedImage[j][x2] != 0:                 # Checking right boundary
+            FoundWhite = 1
+            BoundaryWithWhite[1] = 1
 
     if FoundWhite == 0:
-        for j in range(y1, (y2+1)):                 # Moving down
-            if MaskedImage[j][x1] != 0 or MaskedImage[j][x2] != 0:
-                FoundWhite = 1
-
-    if FoundWhite == 0:
-        return True             # All are black.
+        return True, BoundaryWithWhite             # All are black.
     else:
-        return False            # Some are white.
+        return False, BoundaryWithWhite            # Some are white.
 
 
 ################################################################################
@@ -397,7 +407,8 @@ def ShrinkBoxWRTBoundary(BoxCoordinates, MaskedImage):
 
         while x1 <= x2 and y1 <= y2:
             # Check Boundary of box for all black.
-            if CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage):
+            Flag, BoundaryWithWhite = CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage)
+            if Flag:
                 # Check center of box for non white
                 if MaskedImage[int((y2+y1)/2)][int((x1+x2)/2)] != 0:
                     FinalBox = [x1, y1, x2, y2]
@@ -433,11 +444,28 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
     Contours, Hierarchy = cv2.findContours(EdgedImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) 
     for Contour in Contours:
         (x, y, w, h) = cv2.boundingRect(Contour)
-        if w > h and w*h >= M.MIN_CONTOUR_AREA:
-            BoxCoordinates.append([x, y, x+w-1, y+h-1])
-            #cv2.rectangle(Copy2, (x, y), (x+w, y+h), (0, 0, 255), thickness=1)
-    cv2.imshow('Contours', Copy2) 
-    cv2.waitKey(1)
+        if w > h and w*h >= M.MIN_CONTOUR_AREA and w*h <= M.MAX_CONTOUR_AREA:
+            # Expanding box wrt boundaries till total block
+            x1, y1, x2, y2 = x, y, x+w-1, y+h-1
+            while 1:
+                # Check Boundary of box for all black.
+                Flag, BoundaryWithWhite = CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage)
+                if not Flag:
+                    if BoundaryWithWhite[0] == 1:
+                        y1 -= 1
+                    if BoundaryWithWhite[1] == 1:
+                        x2 += 1
+                    if BoundaryWithWhite[2] == 1:
+                        y2 += 1
+                    if BoundaryWithWhite[3] == 1:
+                        x1 -= 1
+                else:
+                    break
+            
+            BoxCoordinates.append([x1, y1, x2, y2])
+            cv2.rectangle(Copy2, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
+    cv2.imshow('Contours', Copy2)
+
     #BoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
     return FilterBoxCoordinates(ShrinkBoxWRTBoundary(BoxCoordinates, MaskedImage))
 
@@ -725,8 +753,11 @@ def RunCode():
     # =====================Just for visualisation, to be deleted==========================
     ImageCopy = Image.copy()
     for i in LeftGuidingBoxes:
+        print((i[0] - i[2])*(i[1] - i[3]))
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (255, 0, 0), 1)
+    print("\n\n\n")
     for i in RightGuidingBoxes:
+        print((i[0] - i[2])*(i[1] - i[3]))
         cv2.rectangle(Image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 1)
     for i in BoxCoordinates:
         cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 1)
@@ -754,8 +785,6 @@ def FindBoundingBoxes(InputImage):
 
     Image = InputImage.copy()
     
-    cv2.imshow("Input", Image)
-
     LeftGuidingBoxes, RightGuidingBoxes = RunCode()
 
     cv2.waitKey(0)
