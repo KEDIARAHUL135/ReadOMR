@@ -25,14 +25,20 @@ from FindBoundingRect import FindBoundingBoxes
 # Return        : InitialCorners, FinalCorners
 ################################################################################
 def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, Size, ExpandSideBy):
-    InitialCorners = np.float32([[(LeftGuidingBoxes[0][0] + LeftGuidingBoxes[0][2])//2,
-                                  (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2 - ExpandSideBy],
-                                 [(RightGuidingBoxes[0][0] + RightGuidingBoxes[0][2])//2,
-                                  (RightGuidingBoxes[0][1] + RightGuidingBoxes[0][3])//2 - ExpandSideBy],
-                                 [(RightGuidingBoxes[-1][0] + RightGuidingBoxes[-1][2])//2,
-                                  (RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2 + ExpandSideBy],
-                                 [(LeftGuidingBoxes[-1][0] + LeftGuidingBoxes[-1][2])//2,
-                                  (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2   + ExpandSideBy]])
+    if ((LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2 - ExpandSideBy[0]) >= 0 and\
+       ((RightGuidingBoxes[0][1] + RightGuidingBoxes[0][3])//2 - ExpandSideBy[0]) >= 0 and\
+       ((RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2 + ExpandSideBy[1]) <= (Size[1] - 1) and\
+       ((LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2   + ExpandSideBy[1]) <= (Size[1] - 1):
+        InitialCorners = np.float32([[(LeftGuidingBoxes[0][0] + LeftGuidingBoxes[0][2])//2,
+                                      (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2 - ExpandSideBy[0]],
+                                     [(RightGuidingBoxes[0][0] + RightGuidingBoxes[0][2])//2,
+                                      (RightGuidingBoxes[0][1] + RightGuidingBoxes[0][3])//2 - ExpandSideBy[0]],
+                                     [(RightGuidingBoxes[-1][0] + RightGuidingBoxes[-1][2])//2,
+                                      (RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2 + ExpandSideBy[1]],
+                                     [(LeftGuidingBoxes[-1][0] + LeftGuidingBoxes[-1][2])//2,
+                                      (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2   + ExpandSideBy[1]]])
+    else:
+      print("\n\nCannot expand side more than this, if the output is still wrong, Input different image\n\n")
 
 
     # Final coordinates of 4 corner circles in another image
@@ -104,7 +110,7 @@ def ProjectiveTransform(InputImage, InitialCorners, FinalCorners):
 #                 sheet.
 # Return        : CroppedOMR
 ################################################################################
-def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=20, SaveImage=False):
+def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=[0, 0], SaveImage=False):
     LeftGuidingBoxes, RightGuidingBoxes = FindBoundingBoxes(InputImage)
 
     while 1:
@@ -117,13 +123,15 @@ def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=20, SaveImage=False
 
       if SetExpandSideByValue:
         print("\nCheck if all the answer circles of the OMR are present in the CroppedOMR image.")
-        print("If yes then press 'Y' else press any other key to expand the side.\n")
+        print("If yes then press 'Y' else press top arrow key or bottom arrow key")
+        print("to expand the side from respective sides.\n")
         Key = cv2.waitKey(0)
-
         if Key == 89 or Key == 121:   # Key = 'Y'/'y'
           break
-        else:
-          ExpandSideBy += 10
+        elif Key == 82:               # Top key pressed
+          ExpandSideBy[0] += 10
+        elif Key == 84:               # Bottom key pressed
+          ExpandSideBy[1] += 10
       else:
         break
 

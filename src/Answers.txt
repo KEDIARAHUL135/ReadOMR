@@ -1,12 +1,12 @@
 {
-    "A6_10": "D_ABD",
-    "A26_30": "BDACC",
-    "Class": "_",
-    "A16_20": "BDAAC",
-    "Section": "C_",
+    "A1_5": "ACBDA",
     "StudentName": "RAHULLKEDIAA_____________",
+    "A26_30": "BDACC",
+    "A6_10": "D_ABD",
+    "A16_20": "BDAAC",
+    "A11_15": "BDAC_",
+    "Section": "C_",
     "A21_25": "DDBCA",
     "MobileNumber": "8409250577",
-    "A11_15": "BDAC_",
-    "A1_5": "ACBDA"
+    "Class": "_"
 }
