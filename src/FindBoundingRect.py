@@ -862,7 +862,7 @@ def FindBoundingBoxes(InputImage):
     LeftGuidingBoxes, RightGuidingBoxes = RunCode()
 
     cv2.waitKey(1)
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
 
     t2 = t.time()
     print("Time taken = {}".format(t2-t1))

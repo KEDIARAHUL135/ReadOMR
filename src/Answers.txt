@@ -1,10 +1,12 @@
 {
-    "A51_75": "________B_DD__BA___D_____",
-    "A1_25": "____AACD_AA_C_DCC__DAA___",
-    "A76_100": "______ACAA___ACCCA___AACA",
-    "RollNumber": "00022",
-    "StudentName": "_WBKK_PP_OGGFLBB__________________",
-    "Set": "_",
-    "A26_50": "____DD_C_DD__C_DD_C__DD__",
-    "Category": "_"
+    "A6_10": "D_ABD",
+    "A26_30": "BDACC",
+    "Class": "_",
+    "A16_20": "BDAAC",
+    "Section": "C_",
+    "StudentName": "RAHULLKEDIAA_____________",
+    "A21_25": "DDBCA",
+    "MobileNumber": "8409250577",
+    "A11_15": "BDAC_",
+    "A1_5": "ACBDA"
 }

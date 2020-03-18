@@ -11,6 +11,7 @@
 
 import cv2
 from CropOMR import CropOMR
+import macros as M
 
 
 def click_and_crop(event, x, y, flags, param):
@@ -145,10 +146,12 @@ def Configure(InputImagePath, ShrinkImagePercent):
     f = open(OMR_Path, "w")
     # Read Input OMR Image
     Image = cv2.imread(InputImagePath)
-    Image = cv2.resize(Image, (int(Image.shape[1]*ShrinkImagePercent), int(Image.shape[0]*ShrinkImagePercent)))
+    Image = cv2.resize(Image, M.RESIZE_TO)#(int(Image.shape[1]*ShrinkImagePercent), int(Image.shape[0]*ShrinkImagePercent)))
 
 
-    CroppedImage = CropOMR(Image)
+    CroppedImage, ExpandSideBy = CropOMR(Image, SetExpandSideByValue=1)
+    f.write("{}\n".format(ExpandSideBy))
+
     Image = CroppedImage.copy()
     cv2.waitKey(0)
     cv2.destroyAllWindows()

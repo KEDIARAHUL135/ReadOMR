@@ -24,15 +24,15 @@ from FindBoundingRect import FindBoundingBoxes
 #                 corner boxes.
 # Return        : InitialCorners, FinalCorners
 ################################################################################
-def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, Size):
+def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, Size, ExpandSideBy):
     InitialCorners = np.float32([[(LeftGuidingBoxes[0][0] + LeftGuidingBoxes[0][2])//2,
-                                  (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2 - M.EXPAND_BY_PIXEL],
+                                  (LeftGuidingBoxes[0][1] + LeftGuidingBoxes[0][3])//2 - ExpandSideBy],
                                  [(RightGuidingBoxes[0][0] + RightGuidingBoxes[0][2])//2,
-                                  (RightGuidingBoxes[0][1] + RightGuidingBoxes[0][3])//2 - M.EXPAND_BY_PIXEL],
+                                  (RightGuidingBoxes[0][1] + RightGuidingBoxes[0][3])//2 - ExpandSideBy],
                                  [(RightGuidingBoxes[-1][0] + RightGuidingBoxes[-1][2])//2,
-                                  (RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2 + M.EXPAND_BY_PIXEL],
+                                  (RightGuidingBoxes[-1][1] + RightGuidingBoxes[-1][3])//2 + ExpandSideBy],
                                  [(LeftGuidingBoxes[-1][0] + LeftGuidingBoxes[-1][2])//2,
-                                  (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2   + M.EXPAND_BY_PIXEL]])
+                                  (LeftGuidingBoxes[-1][1] + LeftGuidingBoxes[-1][3])//2   + ExpandSideBy]])
 
 
     # Final coordinates of 4 corner circles in another image
@@ -104,17 +104,30 @@ def ProjectiveTransform(InputImage, InitialCorners, FinalCorners):
 #                 sheet.
 # Return        : CroppedOMR
 ################################################################################
-def CropOMR(InputImage, SaveImage=False):
+def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=20, SaveImage=False):
     LeftGuidingBoxes, RightGuidingBoxes = FindBoundingBoxes(InputImage)
 
-    InitialCorners, FinalCorners = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, 
-                                                      RightGuidingBoxes, (InputImage.shape[1], InputImage.shape[0]))
-    # Applying Projective transformation.
-    CroppedOMR = ProjectiveTransform(InputImage, InitialCorners, FinalCorners)
-    CroppedOMR = cv2.resize(CroppedOMR, M.RESIZE_TO)
-    cv2.imshow("CroppedOMR", CroppedOMR)
+    while 1:
+      InitialCorners, FinalCorners = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, 
+              RightGuidingBoxes, (InputImage.shape[1], InputImage.shape[0]), ExpandSideBy)
+      # Applying Projective transformation.
+      CroppedOMR = ProjectiveTransform(InputImage, InitialCorners, FinalCorners)
+      CroppedOMR = cv2.resize(CroppedOMR, M.RESIZE_TO)
+      cv2.imshow("CroppedOMR", CroppedOMR)
+
+      if SetExpandSideByValue:
+        print("\nCheck if all the answer circles of the OMR are present in the CroppedOMR image.")
+        print("If yes then press 'Y' else press any other key to expand the side.\n")
+        Key = cv2.waitKey(0)
+
+        if Key == 89 or Key == 121:   # Key = 'Y'/'y'
+          break
+        else:
+          ExpandSideBy += 10
+      else:
+        break
 
     if SaveImage:
         cv2.imwrite("CroppedOMR.png", CroppedOMR)
 
-    return CroppedOMR
+    return CroppedOMR, ExpandSideBy

@@ -32,5 +32,9 @@ def ReadConfig(OMR_Name):
 	f = open(OMR_Path, "r")
 
 	ReadLines = f.readlines()
+	FirstLine = ReadLines[0]
+	FirstLine = FirstLine.replace("\n", "").replace("\"", "").replace("'", "")
+	ExpandSideBy = int(FirstLine)
 	
-	return SortQuestionParam(ReadLines)
+	NumOfQ, QuestionParam = SortQuestionParam(ReadLines[1:])
+	return ExpandSideBy, NumOfQ, QuestionParam
