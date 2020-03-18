@@ -11,7 +11,7 @@
 import cv2
 import numpy as np
 import macros as M
-from FindBoundingRect import FindBoundingBoxes
+from FindBoundingBoxes import FindBoundingBoxes
 
 
 ################################################################################
