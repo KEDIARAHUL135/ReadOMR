@@ -15,29 +15,8 @@ import json
 
 
 ################################################################################
-# Function      : ExtractAnswers
-# Parameter     : AnswerDict - It is the answer dictionary for each question.
-#                 AnsImages - It is the object of class Answers containing
-#                             cropped images of answers for each question.
-#                 {Rest all the parameters have their usual meanings as
-#                 mentioned in macros.py file. Each of these parameter is
-#                 for different question.}
-# Description   : This function initialises objects for different questions
-#                 and then calls suitable method to fnd answer and then
-#                 stores the answers in a dictionary.
-# Return        : AnswerDict
-################################################################################
-def ExtractAnswers(OMRImage):
-    AnswerDict = {}
-
-    AnswerDict = M.GetAnswerString(AnswerDict, OMRImage)
-
-    return AnswerDict
-
-
-################################################################################
 # Function      : StoreInJSON
-# Parameter     : AnswerDict - It is the answer dictionary for each question.
+# Parameter     : AnswerDict - It is the answer dictionary for the questions.
 # Description   : This function stores the answers in a json file named
 #                 "Answers.txt"
 # Return        : -
@@ -49,14 +28,21 @@ def StoreInJSON(AnswerDict):
 
 ################################################################################
 # Function      : main
-# Parameter     : CroppedOMR - It is the image of cropped OMR Sheet. It is
+# Parameter     : OMR_Name - It is the name of omr type.
+#                 CroppedOMR - It is the image of cropped OMR Sheet. It is
 #                              cropped in rectangle with the help of four
 #                              printed corner circles of the OMR Sheet.
-#                 AnswerDict - It is the answer dictionary for each question.
-# Description   : This function calls suitable functions one by one for
-#                 detecting circles, and the rearranging/resizing the OMR
-#                 sheet and then the answers and found for each question.
-# Return        : AnswerDict
+#                 AnswerDict - It is the answer dictionary for the questions.
+#                 ExpandSideBy - List of 2 variable which denotes the length 
+#                                by which we want to expand side.
+#                 NumOfQuestion - Number of questions to be detected.
+#                 QuestionParam - List of parameters of the question of an OMR 
+#                                 with which we can operate and extract answers 
+#                                 for that question from the OMR.
+# Description   : This function calls suitable functions one by one for reading  
+#                 the config file, cropping the OMR, and the rearranging/resizing 
+#                 the OMR sheet and then the answers are found for each question.
+# Return        : -
 ################################################################################
 def main(OMR_Name, InputImagePath):
     AnswerDict = {}
@@ -71,13 +57,15 @@ def main(OMR_Name, InputImagePath):
     # Crop OMR wrt bounding boxes
     CroppedOMR, _ = CropOMR(InputImage, ExpandSideBy=ExpandSideBy)
     
+    # Extract different answers    
     for i in range(NumOfQuestion):
-        Q = GA.FindAnswer(QuestionParam[i][1], QuestionParam[i][2], QuestionParam[i][3], QuestionParam[i][4], QuestionParam[i][5], QuestionParam[i][6], QuestionParam[i][7], QuestionParam[i][8], QuestionParam[i][9])
+        Q = GA.FindAnswer(QuestionParam[i][1], QuestionParam[i][2], QuestionParam[i][3],\
+                          QuestionParam[i][4], QuestionParam[i][5], QuestionParam[i][6],\
+                          QuestionParam[i][7], QuestionParam[i][8], QuestionParam[i][9])
         AnswerDict[QuestionParam[i][0]] = Q.CropAnswer_MakeGrid_FindAnswer(CroppedOMR)
 
-    # Extract different answers
-    #AnswerDict = ExtractAnswers(CroppedOMR)
     print(AnswerDict)
 
     StoreInJSON(AnswerDict)
+    
     cv2.waitKey(0)

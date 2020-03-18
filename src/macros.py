@@ -10,22 +10,30 @@
 #                 also enhance the output of the code.
 ################################################################################
 
-import GetAnswers as GA
 
-# Size after cropping
+# Resize image to this length every time in the code to get uniform output.
 RESIZE_TO = (750, 950)
 
-EXPAND_BY_PIXEL = 20
-
+# Minimum score required for a box to be considered as guiding box.
 MIN_SCORE_REQ = 8
 
+# Minimum and maximum contour(Rect bounding the contour) areas for it to be considered as guiding.
 MIN_CONTOUR_AREA = 12
 MAX_CONTOUR_AREA = 200
 
-TEMPLATE_OR_CONTOUR_LOGIC = 1   # 0 for templatelogic and 1 for contour logic
-INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC = 3    # 1 for inside line logic and 2 for score logic and 3 for ransac logic
+# Run code with the use of template logic or with contour logic.
+TEMPLATE_OR_CONTOUR_LOGIC = 1               # 0 for templatelogic and 1 for contour logic
 
+# Run code with Inside line logic, or score logic or ransac logic.
+INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC = 3     # 1 for inside line logic and 2 for score logic and 3 for ransac logic
+
+# Used in ransac logic, it defines that at what max distance from the line, a inlier can be considered.
+# Inlier are considered from -MAX_INLIER_DIST to +MAX_INLIER_DIST from the line(as 0).
 MAX_INLIER_DIST = 5
+
+# Threshold used to check if the box is corner box or not
+# A box is corner box if the number of boxes in the verticle line of BoxToCheck is greater than this threshold or not.
+THRESHOLD_TO_CHECK_IF_CORNER_BOX = 10
 
 # Threshold length of corner circle
 ## It means that the corner circle must be present at what max distance from the boundary(Keep this value small).
@@ -38,16 +46,6 @@ MaxRadius = 20
 
 # Threshold Image at this value:
 ThresholdImageAt = 75
-
-# Expand the total area of OMR Sheet after detecting corners
-EXPAND_INITIAL_POINTS = 0           # 1 for yes and 0 for no
-EXPAND_BY = (0, 20, 0, 20)            # Size in pixel by which to want to expand rectangle
-                                    # (It can be negative also to contract size).
-                                    # First element to expand wrt left edge,
-                                    # Second element to expand wrt top edge,
-                                    # Third element to expand wrt right edge &
-                                    # Last element to expand wrt bottom edge.
-
 
 # List of alphabets and numbers
 ## Last character is '_' for empty answer(Blank space/No answer).

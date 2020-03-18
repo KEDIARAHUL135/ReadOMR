@@ -39,6 +39,8 @@ def click_and_crop(event, x, y, flags, param):
         		cv2.imshow("CroppedImage", CroppedImage)
         	else:
         		continue
+
+        	# Checking command to see what action is done and perform the action.
         	Action = cv2.waitKey(1)
         	if Action == 82 and refPt[0][1] > 0:   				# top arrow
         		refPt[0][1] -= 1
@@ -75,7 +77,7 @@ def RectBoundingRegion():
     while True:
         key = cv2.waitKey(1) & 0xFF
 
-        # if the 'c' key is pressed, break from the loop
+        # if the 'y' key is pressed, break from the loop
         if key == ord("Y") or key == ord("y"):
             cv2.destroyAllWindows()
             break
@@ -136,7 +138,7 @@ def RunCode():
     return
 
 
-def Configure(InputImagePath, ShrinkImagePercent):
+def Configure(InputImagePath):
     global Image, CroppedImage, f, OMR_Path
 
     OMR_Name = input("Enter OMR Sheet name : ")
@@ -146,9 +148,9 @@ def Configure(InputImagePath, ShrinkImagePercent):
     f = open(OMR_Path, "w")
     # Read Input OMR Image
     Image = cv2.imread(InputImagePath)
-    Image = cv2.resize(Image, M.RESIZE_TO)#(int(Image.shape[1]*ShrinkImagePercent), int(Image.shape[0]*ShrinkImagePercent)))
+    Image = cv2.resize(Image, M.RESIZE_TO)
 
-
+    # Set and write the value of ExpandSideBy in Config file.
     CroppedImage, ExpandSideBy = CropOMR(Image, SetExpandSideByValue=1)
     f.write("{}\n".format(ExpandSideBy))
 

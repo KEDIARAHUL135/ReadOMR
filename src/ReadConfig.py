@@ -13,7 +13,8 @@ def SortQuestionParam(ReadLines):
 	QuestionParam = []
 
 	for Line in ReadLines:
-		Line = Line.replace("[", "").replace("]", "").replace("\n", "").replace("\"", "").replace("'", "").replace(" ", "")
+		Line = Line.replace("[", "").replace("]", "").replace("\n", "")\
+				   .replace("\"", "").replace("'", "").replace(" ", "")
 		Line = Line.split(",")
 		LineArray = Line.copy()
 		for i in range(1, 10):
@@ -31,11 +32,17 @@ def ReadConfig(OMR_Name):
 	OMR_Path = "ConfigFiles/" + OMR_Name + "_Config.txt"
 	f = open(OMR_Path, "r")
 
+	# Reading all the lines
 	ReadLines = f.readlines()
+
+	# Extracting first line detail individually as it contains detail for expanding the side.
 	FirstLine = ReadLines[0]
-	FirstLine = FirstLine.replace("[", "").replace("]", "").replace("\n", "").replace("\"", "").replace("'", "").replace(" ", "")
+	FirstLine = FirstLine.replace("[", "").replace("]", "").replace("\n", "")\
+					     .replace("\"", "").replace("'", "").replace(" ", "")
 	FirstLine = FirstLine.split(",")
 	ExpandSideBy = [int(FirstLine[0]), int(FirstLine[1])]
 	
+	# Extracting parameter values for each question
 	NumOfQ, QuestionParam = SortQuestionParam(ReadLines[1:])
+
 	return ExpandSideBy, NumOfQ, QuestionParam

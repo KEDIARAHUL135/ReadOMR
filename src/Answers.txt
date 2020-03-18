@@ -1,12 +1,12 @@
 {
-    "A1_5": "ACBDA",
-    "StudentName": "RAHULLKEDIAA_____________",
-    "A26_30": "BDACC",
-    "A6_10": "D_ABD",
-    "A16_20": "BDAAC",
-    "A11_15": "BDAC_",
-    "Section": "C_",
-    "A21_25": "DDBCA",
-    "MobileNumber": "8409250577",
-    "Class": "_"
+    "A16_20": "____A",
+    "A21_25": "DD___",
+    "A11_15": "____D",
+    "MobileNumber": "_9446644_2",
+    "A26_30": "AC___",
+    "StudentName": "YCLLQQ_PHFMB_____________",
+    "Class": "_",
+    "A6_10": "____B",
+    "A1_5": "_____",
+    "Section": "_A"
 }

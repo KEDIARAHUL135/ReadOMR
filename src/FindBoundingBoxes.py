@@ -3,40 +3,38 @@
 # Created by    : Rahul Kedia
 # Created on    : 06/03/2020
 # Project       : ReadOMR
-# Description   : This file aims to find the alternative of the corner circles
-#                 with reference to which we do projective transform on the
-#                 image. It is seen that in most of the cases, corner circles
-#                 are not provided but instead we have horizontal small blocks
-#                 along both of the verticle edges of the OMR Sheet.
+# Description   : This file aims to find the guiding boxes from the OMR Sheet 
+#                 with reference to which the OMR Sheet will be cropped.
 ################################################################################
 
 import numpy as np
 import cv2
 import os
 import macros as M
-import time as t
 
-t1 = t.time()
 
 ################################################################################
 # Function      : MaskImage
-# Parameter     : Image - It contains Input OMR Image.
-#                 HSVImage - It contains HSV of input OMR image.
-#                 LowerRange, UpperRange - They mention the range used to
-#                         extract horizontal block near the edges(Black colour).
+# Parameter     : HSVImage - It contains HSV of input OMR image.
+#                 LowerRange, UpperRange - They mention the range used to extract
+#                                   horizontal block near the edges(Black colour).
 #                 MaskedImage - It contains the Masked Image.
 #                 MaskedBlurImage - Blur of Masked Image.
-# Description   : This function masks the input OMR image for black colour.
+# Description   : This function masks the input OMR image for black to a range 
+#                 of dark gray colour.
 # Return        : MaskedBlurImage
 ################################################################################
 def MaskImage():
     HSVImage = cv2.cvtColor(Image, cv2.COLOR_BGR2HSV)
 
+    # Setting range
     LowerRange = np.array([0, 0, 0])
     UpperRange = np.array([255, 255, 150])
 
+    # Masking
     MaskedImage = cv2.inRange(HSVImage, LowerRange, UpperRange)
     
+    # Blurring
     MaskedBlurImage = cv2.GaussianBlur(MaskedImage, (3, 3), 0)
 
     cv2.imshow("Masked", MaskedBlurImage)
@@ -68,18 +66,16 @@ def TemplateMatching(MaskedImage, TemplateImage, OMRImage):
     #                                   py_template_matching/py_template_matching.html
 
     if (len(MaskedImage.shape)) == 3:
-        img_gray = cv2.cvtColor(MaskedImage, cv2.COLOR_BGR2GRAY)
+        GrayImage = cv2.cvtColor(MaskedImage, cv2.COLOR_BGR2GRAY)
     else:
-        img_gray = MaskedImage
+        GrayImage = MaskedImage
 
     if len(TemplateImage.shape) == 3:
-        template = cv2.cvtColor(TemplateImage, cv2.COLOR_BGR2GRAY)
-    else:
-        template = TemplateImage
+        TemplateImage = cv2.cvtColor(TemplateImage, cv2.COLOR_BGR2GRAY)
+    
+    w, h = TemplateImage.shape[::-1]
 
-    w, h = template.shape[::-1]
-
-    res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    res = cv2.matchTemplate(GrayImage, TemplateImage, cv2.TM_CCOEFF_NORMED)
     threshold = 0.8
     loc = np.where(res >= threshold)
     for pt in zip(*loc[::-1]):
@@ -109,14 +105,14 @@ def IntersectingArea(Rect1, Rect2):
 ################################################################################
 # Function      : FilterBoxCoordinates
 # Parameter     : BoxCoordinates - It contains the coordinates of top left
-#                                   corner and bottom right corner of the
-#                                   boxes as a list of list.
+#                                  corner and bottom right corner of the
+#                                  boxes as a list of list.
 #                 LengthOfBoxCoordinates - Stores the length of BoxCoordinates.
 #                 FoundIntersectingArea - Flag of whether Intersecting area is
 #                                         found or not.
 #                 Rect1, Rect2 - Stores 2 rectangles to be compared.
 #                 FinalBoxCoordinates - Final list of boxes which donot
-#                                        have any intersecting boxes.
+#                                       have any intersecting boxes.
 # Description   : This function finds the intersecting area of 2 boxes
 #                 from the list BoxCoordinates and if no intersecting box
 #                 is found, it stores the box in FinalBoxCoordinates.
@@ -182,7 +178,7 @@ class CornerTag:
 #                         straight line with the BoxToCheck.
 # Description   : This function confirms whether the BoxToCheck is the guiding
 #                 corner boxes or not. It does it by seeing that number of
-#                 guiding boxes in the verticle line of BoxToCheck is greater
+#                 boxes in the verticle line of BoxToCheck is greater
 #                 than a particular threshold or not.
 #                 {This might give false output also if the image is not straight}
 # Return        : True - If it is a guiding corner box
@@ -196,7 +192,7 @@ def CheckIfCornerBox(BoxToCheck, BoxCoordinates):
         if Box[0] <= X <= Box[2]:
             Count += 1
 
-    if Count >= 10:     # Threshold Value
+    if Count >= M.THRESHOLD_TO_CHECK_IF_CORNER_BOX:     # Threshold Value
         return True
     else:
         return False
@@ -301,7 +297,7 @@ def FindCornerBox(BoxCoordinates, Corner, IterateTill):
 # Parameter     : BoxCoordinates - It contains the coordinates of top left
 #                                  corner and bottom right corner of the
 #                                  boxes as a list of list.
-#                 ImageShape - Holds shape of omr image.
+#                 ImageShape - Holds shape of OMR image.
 #                 GuidingCornerBoxes - Hold coordinates of the guiding corner boxes.
 #                 TL/TR/BR/BL CornerTag - These are objects of class CornerTag.
 # Description   : This function finds the guiding corner boxes of the OMR.
@@ -316,11 +312,13 @@ def FindGuidingCornerBoxes(BoxCoordinates, ImageShape):
     else:
         IterateTill = ImageShape[1]
 
+    # Creating objects
     TLCornerTag = CornerTag("TL", 0, 0, 1, 1, 0, 1)
     TRCornerTag = CornerTag("TR", (ImageShape[1] - 1), 0, -1, 1, 2, 1)
     BRCornerTag = CornerTag("BR", (ImageShape[1] - 1), (ImageShape[0] - 1), -1, -1, 2, 3)
     BLCornerTag = CornerTag("BL", 0, (ImageShape[0] - 1), 1, -1, 0, 3)
 
+    # Calling FindCornerBox and appending the GuidingCornerBox list.
     GuidingCornerBoxes.append(FindCornerBox(BoxCoordinates, TLCornerTag, IterateTill))
     GuidingCornerBoxes.append(FindCornerBox(BoxCoordinates, TRCornerTag, IterateTill))
     GuidingCornerBoxes.append(FindCornerBox(BoxCoordinates, BRCornerTag, IterateTill))
@@ -331,14 +329,11 @@ def FindGuidingCornerBoxes(BoxCoordinates, ImageShape):
 
 ################################################################################
 # Function      : CenterOfBoxes
-# Parameter     : BoxesCenter - It contains the coordinates of centre of
-#                                   guiding/corner boxes found.
-#                 Boxes - It contains coordinates of top left
-#                                corner and bottom right corner of the four
-#                                corner boxes as a list of list in the
-#                                clockwise fashion starting from top left
-#                                box.
-# Description   : This function finds the centre of 4 corner box found.
+# Parameter     : BoxesCenter - It contains the coordinates of centre of boxes.
+#                 Boxes - It contains list of coordinates of boxes.
+# Description   : This function finds the centre of boxes present in the list 
+#                 and returns the list of center coordinates of the respective 
+#                 boxes.
 # Return        : BoxesCenter
 ################################################################################
 def CenterOfBoxes(Boxes):
@@ -354,39 +349,40 @@ def CenterOfBoxes(Boxes):
 ################################################################################
 # Function      : CheckBoundaryForAllBlack
 # Parameter     : FoundWhite - Flag for if non black pixel is found on the
-#                              boundary.
+#                              boundary.(True if non black found and False if not).
 #                 {Rest parameters are self explanatory}
 # Description   : This function checks the boundary of the box for all black
 #                 pixel.
-# Return        : True - If all are black on boundary.
-#                 False - If all are not black o boundary.
+# Return        : True - If all are black on the boundary.
+#                 False - If all are not black on the boundary.
 ################################################################################
 def CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage):
-    FoundWhite = 0
-    BoundaryWithWhite = [0, 0, 0, 0]            # Flag for boundary with whte pixel [Top, Right, Bottom, Left]
+    FoundWhite = False
+    # Flag for boundary with white pixel [Top, Right, Bottom, Left] - order used.
+    BoundaryWithWhite = [0, 0, 0, 0]      
 
     for i in range(x1, (x2+1)):                     # Moving right
         if MaskedImage[y1][i] != 0:                 # Checking top boundary
-            FoundWhite = 1
+            FoundWhite = True
             BoundaryWithWhite[0] = 1
 
         if MaskedImage[y2][i] != 0:                 # Checking bottom boundary
-            FoundWhite = 1
+            FoundWhite = True
             BoundaryWithWhite[2] = 1
 
     for j in range(y1, (y2+1)):                     # Moving down
         if MaskedImage[j][x1] != 0:                 # Checking left boundary
-            FoundWhite = 1
+            FoundWhite = True
             BoundaryWithWhite[3] = 1
 
         if MaskedImage[j][x2] != 0:                 # Checking right boundary
-            FoundWhite = 1
+            FoundWhite = True
             BoundaryWithWhite[1] = 1
 
-    if FoundWhite == 0:
-        return True, BoundaryWithWhite             # All are black.
-    else:
+    if FoundWhite:
         return False, BoundaryWithWhite            # Some are white.
+    else:
+        return True, BoundaryWithWhite             # All are black.
 
 
 ################################################################################
@@ -427,52 +423,59 @@ def ShrinkBoxWRTBoundary(BoxCoordinates, MaskedImage):
 
 ################################################################################
 # Function      : FindGuidingBoxes_ContourLogic
-# Parameter     : BoxCoordinates - It contains the coordinates of top left
-#                                   corner and bottom right corner of the
-#                                   guiding boxes as a list of list.
+# Parameter     : BoxCoordinates - It contains the coordinates of top left boxes 
+#                       as corner and bottom right corner of the a list of list.            
 #                 {Rest parameters are self explanatory}
-# Description   : This function finds the coordinates of guiding boxes.
+# Description   : This function finds the coordinates of boxes.
 #                 It does it by drawing contours, making a rectangle around 
-#                 them and filtering them by their area and length of width 
-#                 and height.
+#                 them and then expanding the rectangle till all the pixels on 
+#                 its boundary are black(0 value).
 # Return        : return value from FilterBoxCoordinates
 ################################################################################
 def FindGuidingBoxes_ContourLogic(MaskedImage):
     BoxCoordinates = []
     Height, Width = MaskedImage.shape[:2]
+
     MaskedCopy = MaskedImage.copy()
     Copy2 = Image.copy()
-    EdgedImage = cv2.Canny(MaskedCopy, 30, 200) 
-    Contours, Hierarchy = cv2.findContours(EdgedImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) 
+
+    # Finding edges and then contours.
+    EdgeImage = cv2.Canny(MaskedCopy, 30, 200) 
+    Contours, Hierarchy = cv2.findContours(EdgeImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) 
+    
     for Contour in Contours:
+        # Creating the bounding rectangle.
         (x, y, w, h) = cv2.boundingRect(Contour)
+        # Crecking conditions of shape(verticle box or horizontal box) and area.
         if w > h and w*h >= M.MIN_CONTOUR_AREA and w*h <= M.MAX_CONTOUR_AREA:
-            # Expanding box wrt boundaries till total block
+            # Expanding box wrt boundaries till total black.
             x1, y1, x2, y2 = x, y, x+w-1, y+h-1
-            #print("{}, {}, {}, {}".format(x1, y1, x2, y2))
             while 1:
-                ValueChanged = 0
-                print("{}, {}, {}, {}".format(x1, y1, x2, y2))
+                ValueChanged = 0            # Flag to break loop if expanded from all sides.
+
                 Copy3 = Copy2.copy()
                 cv2.rectangle(Copy3, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
                 cv2.imshow("Running code on contour", Copy3)
                 cv2.waitKey(5)
+                
                 # Check Boundary of box for all black.
                 Flag, BoundaryWithWhite = CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage)
                 Area = ((x2 - x1)*(y2 - y1))
+                # Again checking max area limit to break if exceeded
                 if Area >= M.MAX_CONTOUR_AREA:
                     break
+                # Expanding rectangle
                 if not Flag:
-                    if BoundaryWithWhite[0] == 1 and y1 > 0:
+                    if BoundaryWithWhite[0] == 1 and y1 > 0:            # Top edge
                         y1 -= 1
                         ValueChanged = 1
-                    if BoundaryWithWhite[1] == 1 and x2 < (Width - 2):
+                    if BoundaryWithWhite[1] == 1 and x2 < (Width - 2):  # Right edge
                         x2 += 1
                         ValueChanged = 1
-                    if BoundaryWithWhite[2] == 1 and y2 < (Height -2):
+                    if BoundaryWithWhite[2] == 1 and y2 < (Height -2):  # Bottom edge
                         y2 += 1
                         ValueChanged = 1
-                    if BoundaryWithWhite[3] == 1 and x1 > 0:
+                    if BoundaryWithWhite[3] == 1 and x1 > 0:            # Left edge
                         x1 -= 1
                         ValueChanged = 1
                     if ValueChanged == 0:
@@ -480,7 +483,9 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
                 else:
                     break
             
+            # Appending box coordinates value after finding and expanding rectangle.
             BoxCoordinates.append([x1, y1, x2, y2])
+
             cv2.rectangle(Copy2, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
     cv2.imshow('Contours', Copy2)
 
@@ -489,7 +494,7 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
 
 
 ################################################################################
-# Function      : FindGuidingBoxes
+# Function      : FindGuidingBoxes_TemplateLogic
 # Parameter     : FinalBoxCoordinates - Final list of boxes which donot
 #                                        have any intersecting boxes.
 #                 TemplateImagesFolderPath - Path of template images' folder.
@@ -501,10 +506,10 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
 #                 {Rest parameters are self explanatory}
 # Description   : This function finds the coordinates of guiding boxes.
 #                 It does it by matching different sizes of template image with
-#                 the omr image and then filtering out repeating boxes.
+#                 the masked OMR image and then filtering out repeating boxes.
 # Return        : return value from FilterBoxCoordinates
 ################################################################################
-def FindGuidingBoxes(MaskedImage):
+def FindGuidingBoxes_TemplateLogic(MaskedImage):
     FinalBoxCoordinates = []
 
     TemplateImagesFolderPath = os.path.abspath(os.path.join('TemplateImages'))
@@ -539,12 +544,15 @@ def FindGuidingBoxes(MaskedImage):
 
 ################################################################################
 # Function      : FilterGuidingBoxes_RansacLogic
-# Parameter     : BoxesList - List of boxes from which true guiding
-#                                    boxes are to be founded.
+# Parameter     : BoxesList - List of boxes from which true guiding boxes are 
+#                             to be founded.       
 #                 GuidingBoxesList - List of true guiding boxes found.
-#                 {Rest parameters are explained.}
+#                 CenterInliersList - 2D list of inliers element numbers and 
+#                           inliers count and its first two elements are the 
+#                           element numbers wrt which inliers are being found.
+#                 {Rest parameters are self explanatory.}
 # Description   : This function filters the guiding boxes from the list
-#                 of boxes provided by using logic ransac.
+#                 of boxes provided by using logic inspired by RANSAC.
 # Return        : GuidingBoxesList
 ################################################################################
 def FilterGuidingBoxes_RansacLogic(BoxesList):
@@ -564,22 +572,25 @@ def FilterGuidingBoxes_RansacLogic(BoxesList):
             # Let "A" be of value (x1 - y1*B).
             # Here "A" & "B" are constants.
             # Value of x-coordinate of a point on line at y-coordinate y3 is (X = A + y3*B).
-            # To check if the center  is inlier, the value (X - x-coordinate of center) must lie between 
-            # +-(M.MAX_INLIER_DIST).
+            # To check if the center  is inlier, the value (X - x-coordinate of center) must lie
+            # between +-(M.MAX_INLIER_DIST).
 
             if (CenterOfBoxesList[j][1] - CenterOfBoxesList[i][1]) == 0:
-                B = 100000
+                B = 100000                                      # A big value
             else:
-                B = ((CenterOfBoxesList[j][0] - CenterOfBoxesList[i][0]) / (CenterOfBoxesList[j][1] - CenterOfBoxesList[i][1]))
+                B = ((CenterOfBoxesList[j][0] - CenterOfBoxesList[i][0]) /\
+                     (CenterOfBoxesList[j][1] - CenterOfBoxesList[i][1]))
             A = (CenterOfBoxesList[i][0] - (CenterOfBoxesList[i][1] * B))
 
             for k in range(LengthOfBoxesList):
                 X = (A + (CenterOfBoxesList[k][1] * B))
-                if (-(M.MAX_INLIER_DIST)) <= (X - CenterOfBoxesList[k][0]) <= M.MAX_INLIER_DIST:
+                if (-(M.MAX_INLIER_DIST)) <= (X - CenterOfBoxesList[k][0]) <=\
+                      M.MAX_INLIER_DIST:
                     InliersList.append(k)
                     InlierCount += 1
             
             InliersList.append(InlierCount)
+            # Appending the CenterInliersList list.
             CenterInliersList.append(InliersList)
 
     # Finding list with max inlier details. 
@@ -590,6 +601,7 @@ def FilterGuidingBoxes_RansacLogic(BoxesList):
     
     print(MaxInlierList)
 
+    # Storing the values of boxes which are in maximum inliers.
     for i in range(2, (len(MaxInlierList) - 1)):
         GuidingBoxesList.append(BoxesList[MaxInlierList[i]])
 
@@ -599,17 +611,22 @@ def FilterGuidingBoxes_RansacLogic(BoxesList):
 ################################################################################
 # Function      : FilterGuidingBoxes_ScoreLogic
 # Parameter     : BoxesList - List of boxes from which true guiding
-#                                    boxes are to be founded.
+#                             boxes are to be founded.
 #                 GuidingBoxesList - List of true guiding boxes found.
 #                 Scores - Holds the score of respective boxes.
 #                 {Rest parameters are explained.}
 # Description   : This function filters the guiding boxes from the list
-#                 of boxes provided by using logic of scores.
+#                 of boxes provided by using logic of scores. Score of a box 
+#                 denotes that how many boxes have intersecting area with the 
+#                 box to be scored. If the score is below a minimum threshold, 
+#                 then it is considered as a guiding box.
 # Return        : GuidingBoxesList
 ################################################################################
 def FilterGuidingBoxes_ScoreLogic(BoxesList):
     GuidingBoxesList = []
     Scores = []
+
+    # Finding score and storing it.
     for BoxToBeScored in BoxesList:
         Score = 0
         for Box in BoxesList:
@@ -618,6 +635,7 @@ def FilterGuidingBoxes_ScoreLogic(BoxesList):
 
         Scores.append(Score)
 
+    # Comparing score with threshold and saving it as guiding box.
     for i in range(len(Scores)):
         if Scores[i] >= M.MIN_SCORE_REQ:
             GuidingBoxesList.append(BoxesList[i])
@@ -635,6 +653,9 @@ def FilterGuidingBoxes_ScoreLogic(BoxesList):
 #                 {Rest parameters are explained.}
 # Description   : This function filters the guiding boxes from the list
 #                 of boxes provided by using logic of boxes intersected by lines.
+#                 Line is drawn from the center of two tentative corner 
+#                 guiding boxes found. All the boxes crossing that line are 
+#                 considered to be guiding boxes.
 # Return        : GuidingBoxesList
 ################################################################################
 def FilterGuidingBoxes_InsideLineLogic(BoxesList, GuidingLineC1, GuidingLineC2):
@@ -664,21 +685,21 @@ def FilterGuidingBoxes_InsideLineLogic(BoxesList, GuidingLineC1, GuidingLineC2):
 ################################################################################
 # Function      : SplitAndFindGuidingBoxes
 # Parameter     : BoxCoordinates - List of all the boxes found.
-#                 LeftBoxes, RightBoxes - List of left and right
-#                       guiding boxes found.(First all the boxes are divided to
-#                       left and right and the true guiding boxes are found.)
+#                 LeftBoxes, RightBoxes - List of left and right boxes found.
+#                       (First all the boxes are divided to left and right and
+#                        the true guiding boxes are found.)
 #                 HalfWidthOfImage - Half of width of image(From which left and
 #                                    right boxes are separated).
-#                 {Rest parameters are explained.}
+#                 LeftGuidingBoxes, RightGuidingBoxes - These are list of left 
+#                                                and right guiding boxes found.
+#                 {Rest parameters self explanatory.}
 # Description   : This function filters the true left and right guiding boxes
-#                 from the list of boxes provided.
+#                 from the list of boxes provided by applying logic asked.
 # Return        : LeftGuidingBoxes, RightGuidingBoxes
 ################################################################################
 def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxesCenter):
     LeftBoxes = []
     RightBoxes = []
-
-    BoxCoordinates = sorted(BoxCoordinates, key=lambda l: l[0])
 
     # Filter all boxes to left and right
     for i in BoxCoordinates:
@@ -687,14 +708,17 @@ def SplitAndFindGuidingBoxes(BoxCoordinates, HalfWidthOfImage, GuidingCornerBoxe
         else:
             RightBoxes.append(i)
 
+    # Calling different logic functions as asked.
     if M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 1:
         LeftGuidingBoxes = FilterGuidingBoxes_InsideLineLogic(LeftBoxes, GuidingCornerBoxesCenter[0], 
                                             GuidingCornerBoxesCenter[3])
         RightGuidingBoxes = FilterGuidingBoxes_InsideLineLogic(RightBoxes, GuidingCornerBoxesCenter[1], 
                                              GuidingCornerBoxesCenter[2])
+    
     elif M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 2:
         LeftGuidingBoxes = FilterGuidingBoxes_ScoreLogic(LeftBoxes)
         RightGuidingBoxes = FilterGuidingBoxes_ScoreLogic(RightBoxes)
+    
     elif M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 3:
         LeftGuidingBoxes = FilterGuidingBoxes_RansacLogic(LeftBoxes)
         RightGuidingBoxes = FilterGuidingBoxes_RansacLogic(RightBoxes)    
@@ -745,19 +769,37 @@ def ShrinkTotalBox(BoxCoordinates, MaskedImage):
 
 ################################################################################
 # Function      : RANSAC_OnArea
-# Parameter     : MaskedImage - Contains the image masked for black colour.
-#                 BoxCoordinates - Final list of boxes which donot have any
-#                         intersecting boxes(These are not actual guiding boxes).
+# Parameter     : BoxesList - List of boxes on which logic is to be applied to 
+#                             filter boxes.
+#                 LengthReq - The length of BoxesList required to match other 
+#                             list of guiding boxes.
 #                 {Rest parameters are self explanatory}
 # Description   : This function applies the ransac motivated algo on the areas 
 #                 of boxes to find the most related boxes of required number.
+#                 The logic is that if we plot the areas of all the boxes on a 
+#                 1D axis, the areas corresponding to the guding boxes will be 
+#                 close to each other and the outliers will have different areas 
+#                 and their point on the axis will be at some distance thus the 
+#                 areas of required boxes will form a cluster and the axis will 
+#                 contain some outliers. We will for each box area, see how many 
+#                 boxes have area in the range of -to+ of DifferenceInArea from 
+#                 that point and these points are known as inliers for that point 
+#                 for a particular lenth DifferenceInArea. After getting this, 
+#                 we will check that if any box have LengthReq number of inliers 
+#                 thus those areas will correspond to guiding boxes. If no such 
+#                 cluster is found for a value of DifferenceInArea, then we will 
+#                 increment this value by 1 and check again. Small increments 
+#                 are done to avoid involving outliers.
 # Return        : FinalBoxesList - If required number of boxes are found
 #                 BoxesList - If required number of boxes are not found.
 ################################################################################
 def RANSAC_OnArea(BoxesList, LengthReq, ImageArea):
     FinalBoxesList = []
     AreaOfBoxesList = []
+
     DifferenceInArea = 0
+
+    # Finding area of all respective boxes.
     for Box in BoxesList:
         AreaOfBoxesList.append((Box[0] - Box[2])*(Box[1] - Box[3]))
     
@@ -768,7 +810,8 @@ def RANSAC_OnArea(BoxesList, LengthReq, ImageArea):
             InlierCount = 0
             InlierList = []
             for j in range(len(AreaOfBoxesList)):
-                if (-(DifferenceInArea)) <= (AreaOfBoxesList[i] - AreaOfBoxesList[j]) <= DifferenceInArea:
+                if (-(DifferenceInArea)) <= (AreaOfBoxesList[i] - AreaOfBoxesList[j])\
+                                         <= DifferenceInArea:
                     InlierList.append(j)
                     InlierCount += 1
             InlierList.append(InlierCount)
@@ -789,8 +832,10 @@ def RANSAC_OnArea(BoxesList, LengthReq, ImageArea):
 ################################################################################
 # Function      : RunCode
 # Parameter     : MaskedImage - Contains the image masked for black colour.
-#                 BoxCoordinates - Final list of boxes which donot have any
-#                         intersecting boxes(These are not actual guiding boxes).
+#                 BoxCoordinates - List of boxes found.
+#                 GuidingCornerBoxes - List of the 4 guiding corner boxes.
+#                 LeftGuidingBoxes, RightGuidingBoxes - These are list of left 
+#                                                and right guiding boxes found.
 #                 {Rest parameters are self explanatory}
 # Description   : This function calls relevant functions one by one in order
 #                 to run program.
@@ -799,11 +844,13 @@ def RANSAC_OnArea(BoxesList, LengthReq, ImageArea):
 def RunCode():
     MaskedImage = MaskImage()
 
+    # Finding boxes with logic asked.
     if M.TEMPLATE_OR_CONTOUR_LOGIC == 0:
-        BoxCoordinates = FindGuidingBoxes(MaskedImage)
+        BoxCoordinates = FindGuidingBoxes_TemplateLogic(MaskedImage)
     else:
         BoxCoordinates = FindGuidingBoxes_ContourLogic(MaskedImage)
 
+    # Finding guiding corner boxes and their center
     GuidingCornerBoxes = FindGuidingCornerBoxes(BoxCoordinates, MaskedImage.shape)
     GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
     LeftGuidingBoxes, RightGuidingBoxes = SplitAndFindGuidingBoxes(BoxCoordinates, 
@@ -811,6 +858,7 @@ def RunCode():
     LeftGuidingBoxes = ShrinkTotalBox(LeftGuidingBoxes, MaskedImage)
     RightGuidingBoxes = ShrinkTotalBox(RightGuidingBoxes, MaskedImage)
 
+    # Checking if number of left and right guiding boxes found are equal.
     LenOfLeftGB = len(LeftGuidingBoxes)
     LenOfRightGB = len(RightGuidingBoxes)
     if LenOfLeftGB == LenOfRightGB:
@@ -818,13 +866,19 @@ def RunCode():
     else:
         print("Guiding Boxes not found correctly.")
         print("Appyling RANSAC on areas.")
+        # Applying RANSAC inspired algo on areas of boxes of list which have higher 
+        # number of boxes.
         if LenOfLeftGB > LenOfRightGB:
-            LeftGuidingBoxes = RANSAC_OnArea(LeftGuidingBoxes, LenOfRightGB, Image.shape[0]*Image.shape[0])
+            LeftGuidingBoxes = RANSAC_OnArea(LeftGuidingBoxes, LenOfRightGB,\
+                                             Image.shape[0]*Image.shape[0])
         else:
-            RightGuidingBoxes = RANSAC_OnArea(RightGuidingBoxes, LenOfLeftGB, Image.shape[0]*Image.shape[0])
+            RightGuidingBoxes = RANSAC_OnArea(RightGuidingBoxes, LenOfLeftGB,\
+                                              Image.shape[0]*Image.shape[0])
 
+    # If RANSAC logic is used, then find guiding corner values again.
     if M.INSIDELINE_OR_SCORE_OR_RANSAC_LOGIC == 3:
-        GuidingCornerBoxes = [LeftGuidingBoxes[0], RightGuidingBoxes[0], RightGuidingBoxes[-1], LeftGuidingBoxes[-1]]
+        GuidingCornerBoxes = [LeftGuidingBoxes[0], RightGuidingBoxes[0],\
+                              RightGuidingBoxes[-1], LeftGuidingBoxes[-1]]
         GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
     
     # =====================Just for visualisation, to be deleted==========================
@@ -837,21 +891,19 @@ def RunCode():
         cv2.rectangle(ImageCopy, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 1)
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
-    # ====================================================================================
     cv2.imshow("GuidingBoxes", Image)
     cv2.imshow("AllBoxes", ImageCopy)
-
+    # ====================================================================================
+    
     return LeftGuidingBoxes, RightGuidingBoxes
 
 
 ################################################################################
 # Function      : FindBoundingBoxes
-# Parameter     : Image - Reads the input image of omr sheet.
-#                 InputImagePath - Path from which input image is to be read.
-#                 ResizeImageTo - Resize input image to this size.
-#                 {Rest parameters are self explanatory}
-# Description   : This function read the input omr image and calls RunCode to
-#                 ultimately find the guiding boxes of left side and right side.
+# Parameter     : Image - Reads the input image of OMR sheet.
+# Description   : This function makes the input OMR image global and calls 
+#                 RunCode to ultimately find the guiding boxes of left side 
+#                 and right side.
 # Return        : LeftGuidingBoxes, RightGuidingBoxes
 ################################################################################
 def FindBoundingBoxes(InputImage):
@@ -864,6 +916,4 @@ def FindBoundingBoxes(InputImage):
     cv2.waitKey(1)
     #cv2.destroyAllWindows()
 
-    t2 = t.time()
-    print("Time taken = {}".format(t2-t1))
     return LeftGuidingBoxes, RightGuidingBoxes
