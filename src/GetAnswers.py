@@ -99,59 +99,7 @@ class FindAnswer:
         return NumOfWhite, NumOfBlack
 
     ################################################################################
-    # Method        : FindFinalAnswer
-    # Parameter     : MaxIndex - It is a array which stores the index corresponding
-    #                            to the element containing maximum number of black
-    #                            pixel for each row/col.
-    #                 IndexOfMax & Max - These 2 are temporary variables for
-    #                                    finding MaxIndex.
-    #                 AnswerLength - This holds the total number of characters
-    #                                the answer is holding{Length of MaxIndex}.
-    # Description   : This method finds element with maximum value in each row/col
-    #                 and according to that appends the final answer string.
-    # Return        : -
-    ################################################################################
-    def FindFinalAnswer(self):
-        # Finding max index for all col/row in HistMatrix
-        if self.By_CorR == 'C':
-            MaxIndex = np.zeros(self.HistogramMatrix.shape[1], dtype=int)
-
-            for i in range(self.NumOfCols):
-                IndexOfMax = -1
-                Max = 0
-                for j in range(self.NumOfRows):
-                    if Max < self.HistogramMatrix[j, i] and self.HistogramMatrix[j, i] >= M.MIN_NUM_OF_BLACK_FOR_ANSWER:
-                        Max = self.HistogramMatrix[j, i]
-                        IndexOfMax = j
-                MaxIndex[i] = IndexOfMax
-
-        elif self.By_CorR == 'R':
-            MaxIndex = np.zeros(self.HistogramMatrix.shape[0], dtype=int)
-
-            for i in range(self.NumOfRows):
-                IndexOfMax = -1
-                Max = 0
-                for j in range(self.NumOfCols):
-                    if Max < self.HistogramMatrix[i, j] and self.HistogramMatrix[i, j] >= M.MIN_NUM_OF_BLACK_FOR_ANSWER:
-                        Max = self.HistogramMatrix[i, j]
-                        IndexOfMax = j
-                MaxIndex[i] = IndexOfMax
-
-        print(MaxIndex )
-        # Finding Answer from MaxIndex
-        AnswerLength = len(MaxIndex)        # Length of answer is equal to number of max index found
-
-        for i in range(AnswerLength):
-            if self.Alp_or_Num == 0:                        # Alphabet if 0
-                self.AnswerString += M.Alphabet[MaxIndex[i] + self.StartFromIndex]
-            elif self.Alp_or_Num == 1:                      # Number if 1
-                if MaxIndex[i] == -1:
-                    self.AnswerString += '_'
-                else:    
-                    self.AnswerString += str(MaxIndex[i] + self.StartFromIndex)
-
-    ################################################################################
-    # Method        : MakeGrid_FindAnswer
+    # Method        : MakeGrid_EvalHistogram
     # Parameter     : Height, Width - These hold the height and width respectively
     #                                 of complete answer image.
     #                 WidthOfGrid - This contains the width of the grid box.
@@ -168,14 +116,12 @@ class FindAnswer:
     #                       by 1 to reduce error.
     #                 HistMatrix_i, HistMatrix_j - These variables are used to
     #                                              iterate over HistogramMatrix.
-    # Description   : This method finds element with maximum value in each row/col
-    #                 and according to that appends the final answer string.
-    # Return        : AnswerString
+    # Description   : This method makes grid on image and calls FindHistogram method 
+    #                 to find the histogram for the grid and saves its value in 
+    #                 HistogramMatrix.
+    # Return        : -
     ################################################################################
-    def CropAnswer_MakeGrid_FindAnswer(self, OMRImage):
-        self.AnswerImage(OMRImage)
-        self.ThresholdImage()
-
+    def MakeGrid_EvalHistogram(self):
         Height, Width = self.Image.shape[:2]
         WidthOfGrid = (Width//self.NumOfCols)
         HeightOfGrid = (Height//self.NumOfRows)
@@ -215,9 +161,71 @@ class FindAnswer:
             if HistMatrix_i >= self.NumOfCols:
                 break
 
-        self.FindFinalAnswer()
+    ################################################################################
+    # Method        : FindAnswerString
+    # Parameter     : MaxIndex - It is a array which stores the index corresponding
+    #                            to the element containing maximum number of black
+    #                            pixel for each row/col.
+    #                 IndexOfMax & Max - These 2 are temporary variables for
+    #                                    finding MaxIndex.
+    #                 AnswerLength - This holds the total number of characters
+    #                                the answer is holding{Length of MaxIndex}.
+    # Description   : This method finds element with maximum value in each row/col
+    #                 and according to that appends the final answer string.
+    # Return        : -
+    ################################################################################
+    def FindAnswerString(self):
+        # Finding max index for all col/row in HistMatrix
+        if self.By_CorR == 'C':
+            MaxIndex = np.zeros(self.HistogramMatrix.shape[1], dtype=int)
 
-        print("\n\n\n")
+            for i in range(self.NumOfCols):
+                IndexOfMax = -1
+                Max = 0
+                for j in range(self.NumOfRows):
+                    if Max < self.HistogramMatrix[j, i] and self.HistogramMatrix[j, i] >= M.MIN_NUM_OF_BLACK_FOR_ANSWER:
+                        Max = self.HistogramMatrix[j, i]
+                        IndexOfMax = j
+                MaxIndex[i] = IndexOfMax
+
+        elif self.By_CorR == 'R':
+            MaxIndex = np.zeros(self.HistogramMatrix.shape[0], dtype=int)
+
+            for i in range(self.NumOfRows):
+                IndexOfMax = -1
+                Max = 0
+                for j in range(self.NumOfCols):
+                    if Max < self.HistogramMatrix[i, j] and self.HistogramMatrix[i, j] >= M.MIN_NUM_OF_BLACK_FOR_ANSWER:
+                        Max = self.HistogramMatrix[i, j]
+                        IndexOfMax = j
+                MaxIndex[i] = IndexOfMax
+
+        print(MaxIndex )
+        # Finding Answer from MaxIndex
+        AnswerLength = len(MaxIndex)        # Length of answer is equal to number of max index found
+
+        for i in range(AnswerLength):
+            if self.Alp_or_Num == 0:                        # Alphabet if 0
+                self.AnswerString += M.Alphabet[MaxIndex[i] + self.StartFromIndex]
+            elif self.Alp_or_Num == 1:                      # Number if 1
+                if MaxIndex[i] == -1:
+                    self.AnswerString += '_'
+                else:    
+                    self.AnswerString += str(MaxIndex[i] + self.StartFromIndex)
+
+    ################################################################################
+    # Method        : FindAnswer
+    # Parameter     : OMRImage - Contains the image of Cropped OMR provided.
+    # Description   : This method calls other suitable methods line wise to find the 
+    #                 answer string of the question.
+    # Return        : AnswerString
+    ################################################################################
+    def FindAnswer(self, OMRImage):
+        self.AnswerImage(OMRImage)
+        self.ThresholdImage()
+        self.MakeGrid_EvalHistogram()
+        self.FindAnswerString()
+
         print(self.HistogramMatrix)
         print("\n\n\n")
 

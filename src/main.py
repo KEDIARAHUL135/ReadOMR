@@ -62,7 +62,7 @@ def main(OMR_Name, InputImagePath):
         Q = GA.FindAnswer(QuestionParam[i][1], QuestionParam[i][2], QuestionParam[i][3],\
                           QuestionParam[i][4], QuestionParam[i][5], QuestionParam[i][6],\
                           QuestionParam[i][7], QuestionParam[i][8], QuestionParam[i][9])
-        AnswerDict[QuestionParam[i][0]] = Q.CropAnswer_MakeGrid_FindAnswer(CroppedOMR)
+        AnswerDict[QuestionParam[i][0]] = Q.FindAnswer(CroppedOMR)
 
     print(AnswerDict)
 
