@@ -36,7 +36,7 @@ MAX_INLIER_DIST = 5
 THRESHOLD_TO_CHECK_IF_CORNER_BOX = 10
 
 # Minimum number of black pixel present in grid element for considering as marked.
-MIN_NUM_OF_BLACK_FOR_ANSWER = 60
+MIN_NUM_OF_BLACK_FOR_ANSWER = 10
 
 # Threshold length of corner circle
 ## It means that the corner circle must be present at what max distance from the boundary(Keep this value small).
@@ -55,4 +55,3 @@ ThresholdImageAt = 75
 Alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
             'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
             'Y', 'Z', '_']
-            

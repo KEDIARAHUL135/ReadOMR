@@ -1,12 +1,13 @@
 {
-    "A21_25": "_____",
-    "A11_15": "DD___",
-    "StudentName": "NA___DCG_________________",
-    "A6_10": "_____",
-    "A26_30": "DD___",
-    "A1_5": "AAA__",
-    "Section": "GG",
-    "MobileNumber": "_88_00__44",
-    "Class": "_",
-    "A16_20": "DDD__"
+    "Category": "1",
+    "A136_180": "BBDCC_BDDBD_CAD_DB_C_DCBCDDACBDDDC_BDC_DBDCAC",
+    "CenterCode": "534",
+    "A46_90": "ABCBD_C_BCD_B_BCDC_BABABCBCBCDCDCBCBAB__B__C_",
+    "A91_135": "DBC_BAABBCCDDCC_B__DB_CA_CB_AB_DBAB_DB_AB_BCB",
+    "10thMarks": "90",
+    "MobileNumber": "959587799856____",
+    "12thMarks": "78",
+    "RollNumber": "3645",
+    "A1_45": "_A_BC_BABDDDBBB_ABC_DABC_B_BBA_BAB_DCDBA_BC_A",
+    "CandidateName": "NEIL_NITIN_MUKESH___"
 }

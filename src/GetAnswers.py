@@ -61,8 +61,7 @@ class FindAnswer:
     ################################################################################
     def AnswerImage(self, OMRImage):
         self.Image = OMRImage[self.C_Y:self.C_Y + self.Length, self.C_X:self.C_X + self.Width]
-        self.ImageCopy = self.Image.copy()
-
+        
     ################################################################################
     # Method        : ThresholdImage
     # Parameter     : -
@@ -85,13 +84,13 @@ class FindAnswer:
     # Return        : NumOfWhite, NumOfBlack
     ################################################################################
     def FindHistogram(self, i, j, WidthOfGrid, HeightOfGrid):
-        GridImage = self.ThreshImage[j:j+HeightOfGrid, i:i+WidthOfGrid]
+        GridImage = self.ThreshImage[j:j+WidthOfGrid, i:i+HeightOfGrid]
         Height, Width = GridImage.shape[:2]
         NumOfWhite = NumOfBlack = 0
 
-        for i in range(Width):
-            for j in range(Height):
-                if GridImage[j, i] == 255:
+        for i in range(Height):
+            for j in range(Width):
+                if GridImage[i, j] == 255:
                     NumOfWhite += 1
                 else:
                     NumOfBlack += 1
@@ -122,44 +121,40 @@ class FindAnswer:
     # Return        : -
     ################################################################################
     def MakeGrid_EvalHistogram(self):
+        ImageCopy = self.Image.copy()
+        ThreshImageCopy = self.ThreshImage.copy()
+
         Height, Width = self.Image.shape[:2]
-        WidthOfGrid = (Width//self.NumOfCols)
-        HeightOfGrid = (Height//self.NumOfRows)
-        RemainderOfWidth = ((Width/self.NumOfCols) - WidthOfGrid)
-        RemainderOfHeight = ((Height/self.NumOfRows) - HeightOfGrid)
-        WidthPixelSkipped = 0
-        HeightPixelSkipped = 0
+        GridWidth = Width/self.NumOfCols
+        GridHeight = Height/self.NumOfRows
+        
+        i = 0
         HistMatrix_i = 0
-
-
-        for i in range(0, Width, WidthOfGrid):
-            WidthPixelSkipped += RemainderOfWidth
-            while WidthPixelSkipped >= 1:
-                WidthPixelSkipped -= 1
-                i += 1
-
+        while i < Height:
+            j = 0
             HistMatrix_j = 0
-            for j in range(0, Height, HeightOfGrid):
-                HeightPixelSkipped += RemainderOfHeight
-                while HeightPixelSkipped >= 1:
-                    HeightPixelSkipped -= 1
-                    j += 1
+            while j < Width:
+                cv2.rectangle(ImageCopy, (int(j), int(i)), (int(j+GridWidth-1), int(i+GridHeight-1)), (0, 255, 0), 1)
+                cv2.rectangle(ThreshImageCopy, (int(j), int(i)), (int(j+GridWidth-1), int(i+GridHeight-1)), (0, 255, 0), 1)
+                cv2.imshow("GridImage", ImageCopy)
+                cv2.imshow("ThreshImage", ThreshImageCopy)
 
-                # Uncomment line to form grid on the image.
-                ## {NOTE - comment it again in order to see actual answer}
-                cv2.rectangle(self.ImageCopy, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
-                cv2.imshow("GridImage", self.ImageCopy)
 
-                NumOfWhite, NumOfBlack = self.FindHistogram(i, j, WidthOfGrid, HeightOfGrid)
-                self.HistogramMatrix[HistMatrix_j, HistMatrix_i] = NumOfBlack
+                NumOfWhite, NumOfBlack = self.FindHistogram(int(j), int(i), int(GridWidth-1), int(GridHeight-1))
+                self.HistogramMatrix[HistMatrix_i, HistMatrix_j] = NumOfBlack
 
                 HistMatrix_j += 1
-                if HistMatrix_j >= self.NumOfRows:
+                
+                if HistMatrix_j >= self.NumOfCols:
                     break
 
+                j += GridWidth
+                
             HistMatrix_i += 1
-            if HistMatrix_i >= self.NumOfCols:
+            if HistMatrix_i >= self.NumOfRows:
                 break
+
+            i += GridHeight
 
     ################################################################################
     # Method        : FindAnswerString
@@ -200,7 +195,6 @@ class FindAnswer:
                         IndexOfMax = j
                 MaxIndex[i] = IndexOfMax
 
-        print(MaxIndex )
         # Finding Answer from MaxIndex
         AnswerLength = len(MaxIndex)        # Length of answer is equal to number of max index found
 
@@ -225,9 +219,6 @@ class FindAnswer:
         self.ThresholdImage()
         self.MakeGrid_EvalHistogram()
         self.FindAnswerString()
-
-        print(self.HistogramMatrix)
-        print("\n\n\n")
 
         cv2.waitKey(0)
 
