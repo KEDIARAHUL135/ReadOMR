@@ -445,6 +445,7 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
     Contours, Hierarchy = cv2.findContours(EdgeImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) 
     
     for Contour in Contours:
+        SaveBox = True
         # Creating the bounding rectangle.
         (x, y, w, h) = cv2.boundingRect(Contour)
         # Crecking conditions of shape(verticle box or horizontal box) and area.
@@ -453,7 +454,7 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
             x1, y1, x2, y2 = x, y, x+w-1, y+h-1
             while 1:
                 ValueChanged = 0            # Flag to break loop if expanded from all sides.
-                print("({}, {}, {}, {})".format(x1, y1, x2, y2))
+                #print("({}, {}, {}, {})".format(x1, y1, x2, y2))
                 Copy3 = Copy2.copy()
                 cv2.rectangle(Copy3, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
                 cv2.imshow("Running code on contour", Copy3)
@@ -464,6 +465,8 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
                 Area = ((x2 - x1)*(y2 - y1))
                 # Again checking max area limit to break if exceeded
                 if Area >= M.MAX_CONTOUR_AREA:
+                    # Don't save box which may increase above limits in area.
+                    SaveBox = False
                     break
                 # Expanding rectangle
                 if not Flag:
@@ -484,10 +487,12 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
                 else:
                     break
             
-            # Appending box coordinates value after finding and expanding rectangle.
-            BoxCoordinates.append([x1, y1, x2, y2])
+            # Saving box if allowed
+            if SaveBox:
+                # Appending box coordinates value after finding and expanding rectangle.
+                BoxCoordinates.append([x1, y1, x2, y2])
 
-            cv2.rectangle(Copy2, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
+                cv2.rectangle(Copy2, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
     cv2.imshow('Contours', Copy2)
 
     #BoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
