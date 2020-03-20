@@ -134,10 +134,10 @@ class FindAnswer:
             j = 0
             HistMatrix_j = 0
             while j < Width:
-                cv2.rectangle(ImageCopy, (int(j), int(i)), (int(j+GridWidth-1), int(i+GridHeight-1)), (0, 255, 0), 1)
-                cv2.rectangle(ThreshImageCopy, (int(j), int(i)), (int(j+GridWidth-1), int(i+GridHeight-1)), (0, 255, 0), 1)
-                cv2.imshow("GridImage", ImageCopy)
-                cv2.imshow("ThreshImage", ThreshImageCopy)
+                #cv2.rectangle(ImageCopy, (int(j), int(i)), (int(j+GridWidth-1), int(i+GridHeight-1)), (0, 255, 0), 1)
+                #cv2.rectangle(ThreshImageCopy, (int(j), int(i)), (int(j+GridWidth-1), int(i+GridHeight-1)), (0, 255, 0), 1)
+                #cv2.imshow("GridImage", ImageCopy)
+                #cv2.imshow("ThreshImage", ThreshImageCopy)
 
 
                 NumOfWhite, NumOfBlack = self.FindHistogram(int(j), int(i), int(GridWidth-1), int(GridHeight-1))
@@ -220,6 +220,6 @@ class FindAnswer:
         self.MakeGrid_EvalHistogram()
         self.FindAnswerString()
 
-        cv2.waitKey(0)
+        #cv2.waitKey(0)
 
         return self.AnswerString

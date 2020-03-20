@@ -1,13 +1,13 @@
 {
-    "Category": "1",
-    "A136_180": "BBDCC_BDDBD_CAD_DB_C_DCBCDDACBDDDC_BDC_DBDCAC",
-    "CenterCode": "534",
-    "A46_90": "ABCBD_C_BCD_B_BCDC_BABABCBCBCDCDCBCBAB__B__C_",
-    "A91_135": "DBC_BAABBCCDDCC_B__DB_CA_CB_AB_DBAB_DB_AB_BCB",
-    "10thMarks": "90",
-    "MobileNumber": "959587799856____",
-    "12thMarks": "78",
-    "RollNumber": "3645",
     "A1_45": "_A_BC_BABDDDBBB_ABC_DABC_B_BBA_BAB_DCDBA_BC_A",
-    "CandidateName": "NEIL_NITIN_MUKESH___"
+    "A91_135": "DBC_BAABBCCDDCC_B__DB_CA_CB_AB_DBAB_DB_AB_BCB",
+    "Category": "1",
+    "CenterCode": "534",
+    "12thMarks": "78",
+    "A136_180": "BBDCC_BDDBD_CAD_DB_C_DCBCDDACBDDDC_BDC_DBDCAC",
+    "RollNumber": "3645",
+    "CandidateName": "NEIL_NITIN_MUKESH___",
+    "10thMarks": "90",
+    "A46_90": "ABCBD_C_BCD_B_BCDC_BABABCBCBCDCDCBCBAB__B__C_",
+    "MobileNumber": "959587799856____"
 }

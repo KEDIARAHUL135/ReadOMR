@@ -27,11 +27,17 @@ from FindBoundingBoxes import FindBoundingBoxes
 #                           corners in the same order as that of InitialCorners.
 #                 Coordinates - It holds the value of initial coordinates in a 
 #                               from of list for better readability.
+#                 PrevInitialCorners - Stores the InitialCorners variable value 
+#                                   of the previous iteration as a global value.
+#                 AskNextAction - Flag denoting that the user sholud be asked 
+#                                 next action of expanding edge or not.
 # Description   : This sets the Initial and Final coordinates of the guiding
 #                 corner boxes.
 # Return        : InitialCorners, FinalCorners
 ################################################################################
 def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, Size, ExpandSideBy):
+    global PrevInitialCorners
+    AskNextAction = True
     # Setting the value of Coordinates to beautify the code.
     Coordinates = []
     Coordinates.append((LeftGuidingBoxes[0][0] + LeftGuidingBoxes[0][2])//2)
@@ -50,8 +56,11 @@ def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, Size
                                      [Coordinates[2], Coordinates[3]],
                                      [Coordinates[4], Coordinates[5]],
                                      [Coordinates[6], Coordinates[7]]])
+        PrevInitialCorners = InitialCorners
     else:
       print("\n\nCannot expand side more than this, if the output is still wrong, Input different image\n\n")
+      InitialCorners = PrevInitialCorners
+      AskNextAction = False
 
 
     # Final coordinates of 4 corner circles in another image
@@ -60,7 +69,7 @@ def SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, RightGuidingBoxes, Size
                                [(Size[0] - 1), (Size[1] - 1)],
                                [0., (Size[1] - 1)]])
 
-    return InitialCorners, FinalCorners
+    return InitialCorners, FinalCorners, AskNextAction
 
 
 ################################################################################
@@ -93,6 +102,8 @@ def ProjectiveTransform(InputImage, InitialCorners, FinalCorners):
 #                 CroppedOMR - It contains the image of cropped OMR Sheet.
 #                 ExpandSideBy - It is a list of 2 values by which we want to 
 #                                expand the top and bottom side respectively.
+#                 AskNextAction - Flag denoting that the user sholud be asked 
+#                                 next action of expanding edge or not.
 #                 {Other parameters are self explanatory.}
 # Description   : This function calls suitable functions one by one for
 #                 detecting corner guiding boxes, and transforming the OMR
@@ -106,7 +117,7 @@ def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=[0, 0]):
     # only if we donot wish to set the value.
     while 1:
         # Setting Initial and Final corners values.
-        InitialCorners, FinalCorners = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, 
+        InitialCorners, FinalCorners, AskNextAction = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, 
                 RightGuidingBoxes, (InputImage.shape[1], InputImage.shape[0]), ExpandSideBy)
         
         # Applying Projective transformation.
@@ -115,7 +126,7 @@ def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=[0, 0]):
         cv2.imshow("CroppedOMR", CroppedOMR)
 
         # Ask for setting the value of ExpandSideBy if prompted.
-        if SetExpandSideByValue:
+        if SetExpandSideByValue and AskNextAction:
             print("\nCheck if all the answer circles of the OMR are present in the CroppedOMR image.")
             print("If yes then press 'Y' else press top arrow key or bottom arrow key")
             print("to expand the side from respective sides.\n")
