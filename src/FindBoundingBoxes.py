@@ -11,6 +11,7 @@ import numpy as np
 import cv2
 import os
 import macros as M
+import CheckBrightness as CB
 
 
 ################################################################################
@@ -24,12 +25,12 @@ import macros as M
 #                 of dark gray colour.
 # Return        : MaskedBlurImage
 ################################################################################
-def MaskImage():
+def MaskImage(UpperLimitOfValue):
     HSVImage = cv2.cvtColor(Image, cv2.COLOR_BGR2HSV)
 
     # Setting range
     LowerRange = np.array([0, 0, 0])
-    UpperRange = np.array([255, 255, 150])
+    UpperRange = np.array([255, 255, UpperLimitOfValue])
 
     # Masking
     MaskedImage = cv2.inRange(HSVImage, LowerRange, UpperRange)
@@ -452,11 +453,11 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
             x1, y1, x2, y2 = x, y, x+w-1, y+h-1
             while 1:
                 ValueChanged = 0            # Flag to break loop if expanded from all sides.
-
+                print("({}, {}, {}, {})".format(x1, y1, x2, y2))
                 Copy3 = Copy2.copy()
                 cv2.rectangle(Copy3, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
                 cv2.imshow("Running code on contour", Copy3)
-                cv2.waitKey(5)
+                cv2.waitKey(1)
                 
                 # Check Boundary of box for all black.
                 Flag, BoundaryWithWhite = CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage)
@@ -822,6 +823,7 @@ def RANSAC_OnArea(BoxesList, LengthReq, ImageArea):
                 print("Found all inliers wrt area.")
                 for i in range(len(InlierList)-1):
                     FinalBoxesList.append(BoxesList[InlierList[i]])
+                print(AreaOfBoxesList   )    
                 return FinalBoxesList
         DifferenceInArea += 1
 
@@ -841,8 +843,8 @@ def RANSAC_OnArea(BoxesList, LengthReq, ImageArea):
 #                 to run program.
 # Return        : LeftGuidingBoxes, RightGuidingBoxes
 ################################################################################
-def RunCode():
-    MaskedImage = MaskImage()
+def RunCode(UpperLimitOfValue):
+    MaskedImage = MaskImage(UpperLimitOfValue)
 
     # Finding boxes with logic asked.
     if M.TEMPLATE_OR_CONTOUR_LOGIC == 0:
@@ -892,7 +894,7 @@ def RunCode():
     for i in GuidingCornerBoxesCenter:
         cv2.circle(Image, i, 2, (0, 255, 0), -1)
     cv2.imshow("GuidingBoxes", Image)
-    cv2.imshow("AllBoxes", ImageCopy)
+    #cv2.imshow("AllBoxes", ImageCopy)
     # ====================================================================================
     
     return LeftGuidingBoxes, RightGuidingBoxes
@@ -910,8 +912,11 @@ def FindBoundingBoxes(InputImage):
     global Image
 
     Image = InputImage.copy()
+
+    #Checking brightness value and setting upper limit of "Value"
+    UpperLimitOfValue = CB.CheckBrightness(Image)
     
-    LeftGuidingBoxes, RightGuidingBoxes = RunCode()
+    LeftGuidingBoxes, RightGuidingBoxes = RunCode(UpperLimitOfValue)
 
     cv2.waitKey(1)
     #cv2.destroyAllWindows()

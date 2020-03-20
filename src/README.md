@@ -5,6 +5,8 @@ This folder contains the source code of the project and other required folders f
 
 ### Folder Structure
 
+`CheckBrightness.py` file checks the brightness level of the image and passes the value of upper limit of "Value" for masking of the image.
+
 `ConfigFiles` folder contains the configuration files created for each type of OMR.
 
 `InputImages` folder contains the sample input images for the code.
