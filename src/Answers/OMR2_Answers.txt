@@ -1,0 +1,30 @@
+
+Answers to: Filled3.jpg :- 
+A26_50			: BACCBACBD_CB__ABC_CDDC_BC
+Set			: B
+A51_75			: B_CBCABCDCBABCDCBABCDCBBA
+StudentsName			: RAKESH_BANSAL_____________________
+A76_100			: CBACDCBBCABBBBCCCDABCDCBA
+Category			: 1
+RollNumber			: 43475
+A1_25			: CAB___CABDC_B_CBD_B_CCCCB
+
+Answers to: Filled1.jpg :- 
+A26_50			: BCADBCCADBCAD_B__BAAC_DBA
+Set			: C
+A51_75			: BCDCBABCDDCBABCDCBABCDCBA
+StudentsName			: RAHUL_KEDIA_______________________
+A76_100			: AABBCCDDBACDB_CADBCBCADBC
+Category			: 1
+RollNumber			: 101586
+A1_25			: ABCDADB_CB__CADDDDC_BADCB
+
+Answers to: Filled2.jpg :- 
+A26_50			: ABCDCBABCDCBABCDCBABCDCBA
+Set			: D
+A51_75			: ADBCADBABABCDCDBBBC_ABDC_
+StudentsName			: SHIVAM_SAXENA_____________________
+A76_100			: A_B___ADCB_BDCAB_DCBACBDD
+Category			: 5
+RollNumber			: 1015110
+A1_25			: ACDBCAB_CD_BADCBAC_BDAAAD

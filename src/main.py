@@ -22,9 +22,18 @@ import json
 #                 "Answers.txt"
 # Return        : -
 ################################################################################
-def StoreInJSON(AnswerDict):
-    with open('Answers.txt', 'a') as outfile:
-        json.dump(AnswerDict, outfile, indent=4, sort_keys=False)
+def StoreInJSON(AnswerDict, OMR_Name, ImageName, CreateNewFile, FirstFile):
+    AnswersFolderPath = os.path.abspath(os.path.join('Answers'))
+
+    AnswersFilePath = AnswersFolderPath + "/" + OMR_Name + "_Answers.txt"
+    if CreateNewFile and FirstFile:
+        f = open(AnswersFilePath, 'w')
+    else:
+        f = open(AnswersFilePath, 'a')
+    
+    f.write("\nAnswers to: {} :- \n".format(ImageName))
+    for Question, Answer in AnswerDict.items():
+        f.write("{}\t\t\t: {}\n".format(Question, Answer))
 
 
 ################################################################################
@@ -45,8 +54,9 @@ def StoreInJSON(AnswerDict):
 #                 the OMR sheet and then the answers are found for each question.
 # Return        : -
 ################################################################################
-def main(OMR_Name, InputImageFolderPath):
+def main(OMR_Name, InputImageFolderPath, CreateNewFile=False):
     AnswerDict = {}
+    FirstFile = True
 
     for ImageName in os.listdir(InputImageFolderPath):
         # Read Input and resize it
@@ -68,6 +78,7 @@ def main(OMR_Name, InputImageFolderPath):
 
         #print(AnswerDict)
 
-        StoreInJSON(AnswerDict)
-    
+        StoreInJSON(AnswerDict, OMR_Name, ImageName, CreateNewFile, FirstFile)
+        FirstFile = False
+
     #cv2.waitKey(0)
