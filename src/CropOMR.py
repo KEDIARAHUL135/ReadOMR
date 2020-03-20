@@ -111,11 +111,13 @@ def ProjectiveTransform(InputImage, InitialCorners, FinalCorners):
 # Return        : CroppedOMR, ExpandSideBy
 ################################################################################
 def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=[0, 0]):
+    global PrevKey
     LeftGuidingBoxes, RightGuidingBoxes = FindBoundingBoxes(InputImage)
 
     # Using infinite loop to set ExpandSideBy value or it will break in the first iteration 
     # only if we donot wish to set the value.
     while 1:
+        #print("Expand Side by - {}".format(ExpandSideBy))
         # Setting Initial and Final corners values.
         InitialCorners, FinalCorners, AskNextAction = SetCoordinatesOfCornerGuidingBoxes(LeftGuidingBoxes, 
                 RightGuidingBoxes, (InputImage.shape[1], InputImage.shape[0]), ExpandSideBy)
@@ -123,7 +125,7 @@ def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=[0, 0]):
         # Applying Projective transformation.
         CroppedOMR = ProjectiveTransform(InputImage, InitialCorners, FinalCorners)
         CroppedOMR = cv2.resize(CroppedOMR, M.RESIZE_TO)
-        cv2.imshow("CroppedOMR", CroppedOMR)
+        #cv2.imshow("CroppedOMR", CroppedOMR)
 
         # Ask for setting the value of ExpandSideBy if prompted.
         if SetExpandSideByValue and AskNextAction:
@@ -138,6 +140,15 @@ def CropOMR(InputImage, SetExpandSideByValue=0, ExpandSideBy=[0, 0]):
             elif Key == 84:               # Bottom key pressed
                 ExpandSideBy[1] += 10
         else:
+            '''if AskNextAction:
+                if Key == 82:                   # Top key was pressed
+                    ExpandSideBy[0] -= 10
+                elif Key == 84:                 # Bottom key was pressed
+                    ExpandSideBy[1] -= 10'''
             break
+
+        PrevKey = Key
+
+    #print("Expand Side by - {}".format(ExpandSideBy))
 
     return CroppedOMR, ExpandSideBy

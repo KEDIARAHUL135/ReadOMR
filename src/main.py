@@ -7,6 +7,7 @@
 ################################################################################
 
 import cv2
+import os
 import macros as M
 import GetAnswers as GA
 from CropOMR import CropOMR
@@ -22,7 +23,7 @@ import json
 # Return        : -
 ################################################################################
 def StoreInJSON(AnswerDict):
-    with open('Answers.txt', 'w') as outfile:
+    with open('Answers.txt', 'a') as outfile:
         json.dump(AnswerDict, outfile, indent=4, sort_keys=False)
 
 
@@ -44,28 +45,29 @@ def StoreInJSON(AnswerDict):
 #                 the OMR sheet and then the answers are found for each question.
 # Return        : -
 ################################################################################
-def main(OMR_Name, InputImagePath):
+def main(OMR_Name, InputImageFolderPath):
     AnswerDict = {}
 
-    # Read Input and resize it
-    InputImage = cv2.imread(InputImagePath)
-    InputImage = cv2.resize(InputImage, M.RESIZE_TO)
+    for ImageName in os.listdir(InputImageFolderPath):
+        # Read Input and resize it
+        InputImage = cv2.imread(InputImageFolderPath + "/" + ImageName)
+        InputImage = cv2.resize(InputImage, M.RESIZE_TO)
     
-    # Reading Config file
-    ExpandSideBy, NumOfQuestion, QuestionParam = ReadConfig(OMR_Name)
+        # Reading Config file
+        ExpandSideBy, NumOfQuestion, QuestionParam = ReadConfig(OMR_Name)
 
-    # Crop OMR wrt bounding boxes
-    CroppedOMR, _ = CropOMR(InputImage, ExpandSideBy=ExpandSideBy)
+        # Crop OMR wrt bounding boxes   
+        CroppedOMR, _ = CropOMR(InputImage, ExpandSideBy=ExpandSideBy)
     
-    # Extract different answers    
-    for i in range(NumOfQuestion):
-        Q = GA.FindAnswer(QuestionParam[i][1], QuestionParam[i][2], QuestionParam[i][3],\
-                          QuestionParam[i][4], QuestionParam[i][5], QuestionParam[i][6],\
-                          QuestionParam[i][7], QuestionParam[i][8], QuestionParam[i][9])
-        AnswerDict[QuestionParam[i][0]] = Q.FindAnswer(CroppedOMR)
+        # Extract different answers    
+        for i in range(NumOfQuestion):
+            Q = GA.FindAnswer(QuestionParam[i][1], QuestionParam[i][2], QuestionParam[i][3],\
+                              QuestionParam[i][4], QuestionParam[i][5], QuestionParam[i][6],\
+                              QuestionParam[i][7], QuestionParam[i][8], QuestionParam[i][9])
+            AnswerDict[QuestionParam[i][0]] = Q.FindAnswer(CroppedOMR)
 
-    print(AnswerDict)
+        #print(AnswerDict)
 
-    StoreInJSON(AnswerDict)
+        StoreInJSON(AnswerDict)
     
-    cv2.waitKey(0)
+    #cv2.waitKey(0)

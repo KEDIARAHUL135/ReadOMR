@@ -1,13 +1,34 @@
 {
-    "A1_45": "_A_BC_BABDDDBBB_ABC_DABC_B_BBA_BAB_DCDBA_BC_A",
-    "A91_135": "DBC_BAABBCCDDCC_B__DB_CA_CB_AB_DBAB_DB_AB_BCB",
+    "Category": "2",
+    "BookletCode": "B",
+    "Gender": "1",
+    "SubCategory": "3",
+    "RollProgrammeCodeAppliedFor": "3",
+    "NameOfCandidate": "PRASHANT_CHAUDHARY___________",
+    "StateDomicile": "2",
+    "RollNumber": "5032696",
+    "CenterCode": "14",
+    "DateOfBirth": "93421467"
+}{
+    "Category": "3",
+    "BookletCode": "D",
+    "Gender": "2",
+    "SubCategory": "3",
+    "RollProgrammeCodeAppliedFor": "3",
+    "NameOfCandidate": "AARYA_CHAUDHARY______________",
+    "StateDomicile": "_",
+    "RollNumber": "5475250",
+    "CenterCode": "36",
+    "DateOfBirth": "57402008"
+}{
     "Category": "1",
-    "CenterCode": "534",
-    "12thMarks": "78",
-    "A136_180": "BBDCC_BDDBD_CAD_DB_C_DCBCDDACBDDDC_BDC_DBDCAC",
-    "RollNumber": "3645",
-    "CandidateName": "NEIL_NITIN_MUKESH___",
-    "10thMarks": "90",
-    "A46_90": "ABCBD_C_BCD_B_BCDC_BABABCBCBCDCDCBCBAB__B__C_",
-    "MobileNumber": "959587799856____"
+    "BookletCode": "C",
+    "Gender": "1",
+    "SubCategory": "1",
+    "RollProgrammeCodeAppliedFor": "1",
+    "NameOfCandidate": "JAGDISH_PRASAD_KEDIA_________",
+    "StateDomicile": "2",
+    "RollNumber": "6685013",
+    "CenterCode": "55",
+    "DateOfBirth": "07122000"
 }

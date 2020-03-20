@@ -38,7 +38,7 @@ def MaskImage(UpperLimitOfValue):
     # Blurring
     MaskedBlurImage = cv2.GaussianBlur(MaskedImage, (3, 3), 0)
 
-    cv2.imshow("Masked", MaskedBlurImage)
+    #cv2.imshow("Masked", MaskedBlurImage)
 
     return MaskedBlurImage
 
@@ -438,7 +438,7 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
     Height, Width = MaskedImage.shape[:2]
 
     MaskedCopy = MaskedImage.copy()
-    Copy2 = Image.copy()
+    #Copy2 = Image.copy()
 
     # Finding edges and then contours.
     EdgeImage = cv2.Canny(MaskedCopy, 30, 200) 
@@ -455,10 +455,10 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
             while 1:
                 ValueChanged = 0            # Flag to break loop if expanded from all sides.
                 #print("({}, {}, {}, {})".format(x1, y1, x2, y2))
-                Copy3 = Copy2.copy()
-                cv2.rectangle(Copy3, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
-                cv2.imshow("Running code on contour", Copy3)
-                cv2.waitKey(1)
+                #Copy3 = Copy2.copy()
+                #cv2.rectangle(Copy3, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
+                #cv2.imshow("Running code on contour", Copy3)
+                #cv2.waitKey(1)
                 
                 # Check Boundary of box for all black.
                 Flag, BoundaryWithWhite = CheckBoundaryForAllBlack(x1, y1, x2, y2, MaskedImage)
@@ -466,7 +466,6 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
                 # Again checking max area limit to break if exceeded
                 if Area >= M.MAX_CONTOUR_AREA:
                     # Don't save box which may increase above limits in area.
-                    SaveBox = False
                     break
                 # Expanding rectangle
                 if not Flag:
@@ -492,8 +491,8 @@ def FindGuidingBoxes_ContourLogic(MaskedImage):
                 # Appending box coordinates value after finding and expanding rectangle.
                 BoxCoordinates.append([x1, y1, x2, y2])
 
-                cv2.rectangle(Copy2, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
-    cv2.imshow('Contours', Copy2)
+                #cv2.rectangle(Copy2, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
+    #cv2.imshow('Contours', Copy2)
 
     #BoxCoordinates = FilterBoxCoordinates(BoxCoordinates)
     return FilterBoxCoordinates(ShrinkBoxWRTBoundary(BoxCoordinates, MaskedImage))
@@ -605,7 +604,7 @@ def FilterGuidingBoxes_RansacLogic(BoxesList):
         if InlierList[-1] >= MaxInlierList[-1]:
             MaxInlierList = InlierList
     
-    print(MaxInlierList)
+    #print(MaxInlierList)
 
     # Storing the values of boxes which are in maximum inliers.
     for i in range(2, (len(MaxInlierList) - 1)):
@@ -828,7 +827,7 @@ def RANSAC_OnArea(BoxesList, LengthReq, ImageArea):
                 print("Found all inliers wrt area.")
                 for i in range(len(InlierList)-1):
                     FinalBoxesList.append(BoxesList[InlierList[i]])
-                print(AreaOfBoxesList   )    
+                #print(AreaOfBoxesList)    
                 return FinalBoxesList
         DifferenceInArea += 1
 
@@ -888,6 +887,7 @@ def RunCode(UpperLimitOfValue):
                               RightGuidingBoxes[-1], LeftGuidingBoxes[-1]]
         GuidingCornerBoxesCenter = CenterOfBoxes(GuidingCornerBoxes)
     
+    '''
     # =====================Just for visualisation, to be deleted==========================
     ImageCopy = Image.copy()
     for i in LeftGuidingBoxes:
@@ -901,7 +901,7 @@ def RunCode(UpperLimitOfValue):
     cv2.imshow("GuidingBoxes", Image)
     #cv2.imshow("AllBoxes", ImageCopy)
     # ====================================================================================
-    
+    '''
     return LeftGuidingBoxes, RightGuidingBoxes
 
 
@@ -923,7 +923,7 @@ def FindBoundingBoxes(InputImage):
     
     LeftGuidingBoxes, RightGuidingBoxes = RunCode(UpperLimitOfValue)
 
-    cv2.waitKey(1)
+    #cv2.waitKey(1)
     #cv2.destroyAllWindows()
 
     return LeftGuidingBoxes, RightGuidingBoxes

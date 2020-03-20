@@ -83,7 +83,7 @@ class FindAnswer:
     # Description   : This method converts the image to thresholded grayscale.
     # Return        : NumOfWhite, NumOfBlack
     ################################################################################
-    def FindHistogram(self, i, j, WidthOfGrid, HeightOfGrid):
+    def FindHistogram(self, i, j, HeightOfGrid, WidthOfGrid):
         GridImage = self.ThreshImage[j:j+WidthOfGrid, i:i+HeightOfGrid]
         Height, Width = GridImage.shape[:2]
         NumOfWhite = NumOfBlack = 0
