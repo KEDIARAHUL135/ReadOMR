@@ -61,6 +61,7 @@ class FindAnswer:
     ################################################################################
     def AnswerImage(self, OMRImage):
         self.Image = OMRImage[self.C_Y:self.C_Y + self.Length, self.C_X:self.C_X + self.Width]
+        self.ImageCopy = self.Image.copy()
 
     ################################################################################
     # Method        : ThresholdImage
@@ -119,7 +120,7 @@ class FindAnswer:
                 IndexOfMax = -1
                 Max = 0
                 for j in range(self.NumOfRows):
-                    if Max < self.HistogramMatrix[j, i]:
+                    if Max < self.HistogramMatrix[j, i] and self.HistogramMatrix[j, i] >= M.MIN_NUM_OF_BLACK_FOR_ANSWER:
                         Max = self.HistogramMatrix[j, i]
                         IndexOfMax = j
                 MaxIndex[i] = IndexOfMax
@@ -131,11 +132,12 @@ class FindAnswer:
                 IndexOfMax = -1
                 Max = 0
                 for j in range(self.NumOfCols):
-                    if Max < self.HistogramMatrix[i, j]:
+                    if Max < self.HistogramMatrix[i, j] and self.HistogramMatrix[i, j] >= M.MIN_NUM_OF_BLACK_FOR_ANSWER:
                         Max = self.HistogramMatrix[i, j]
                         IndexOfMax = j
                 MaxIndex[i] = IndexOfMax
 
+        print(MaxIndex )
         # Finding Answer from MaxIndex
         AnswerLength = len(MaxIndex)        # Length of answer is equal to number of max index found
 
@@ -143,7 +145,10 @@ class FindAnswer:
             if self.Alp_or_Num == 0:                        # Alphabet if 0
                 self.AnswerString += M.Alphabet[MaxIndex[i] + self.StartFromIndex]
             elif self.Alp_or_Num == 1:                      # Number if 1
-                self.AnswerString += M.Numbers[MaxIndex[i] + self.StartFromIndex]
+                if MaxIndex[i] == -1:
+                    self.AnswerString += '_'
+                else:    
+                    self.AnswerString += str(MaxIndex[i] + self.StartFromIndex)
 
     ################################################################################
     # Method        : MakeGrid_FindAnswer
@@ -196,8 +201,8 @@ class FindAnswer:
 
                 # Uncomment line to form grid on the image.
                 ## {NOTE - comment it again in order to see actual answer}
-                #cv2.rectangle(self.ThreshImage, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
-                #cv2.imshow("GridThreshImage", self.ThreshImage)
+                cv2.rectangle(self.ImageCopy, (i, j), (i+WidthOfGrid, j+HeightOfGrid), (0, 255, 0), 1)
+                cv2.imshow("GridImage", self.ImageCopy)
 
                 NumOfWhite, NumOfBlack = self.FindHistogram(i, j, WidthOfGrid, HeightOfGrid)
                 self.HistogramMatrix[HistMatrix_j, HistMatrix_i] = NumOfBlack
@@ -211,5 +216,11 @@ class FindAnswer:
                 break
 
         self.FindFinalAnswer()
+
+        print("\n\n\n")
+        print(self.HistogramMatrix)
+        print("\n\n\n")
+
+        cv2.waitKey(0)
 
         return self.AnswerString
